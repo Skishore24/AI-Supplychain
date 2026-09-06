@@ -1,115 +1,118 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Cpu, ArrowRight } from "lucide-react";
-
+import { ShoppingBag, ArrowRight, Lock, Eye, EyeOff, Sparkles } from "lucide-react";
 
 function Login() {
   const navigate = useNavigate();
-  const [role, setRole] = useState("user"); // "user" or "admin"
-  const [email, setEmail] = useState("admin@supplyai.io");
+  const [email, setEmail] = useState("customer@ekart.io");
   const [password, setPassword] = useState("••••••••");
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    if (role === "admin") {
-      navigate("/admin");
-    } else {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
       navigate("/shop");
-    }
+    }, 800);
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-950 flex items-center justify-center px-6 py-12">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-gradient-to-tr from-blue-600/20 to-indigo-600/20 blur-[100px] rounded-full pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-indigo-100 flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Background blobs */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-96 w-96 rounded-full bg-blue-200/30 blur-3xl animate-pulse-slow" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-indigo-200/30 blur-3xl animate-pulse-slow" style={{ animationDelay: "1.5s" }} />
 
-      <div className="relative w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-md">
-        <Link to="/" className="flex items-center gap-2.5 text-xl font-bold text-white tracking-tight justify-center mb-6">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25">
-            <Cpu size={20} />
-          </span>
-          <span>
-            Supply<span className="text-blue-500">AI</span>
-          </span>
-        </Link>
+      <div className="w-full max-w-md animate-slide-up">
+        {/* Card */}
+        <div className="rounded-3xl border border-white/80 bg-white/80 backdrop-blur-xl p-8 shadow-[0_24px_64px_rgba(0,0,0,0.1)]">
 
-        <h1 className="text-2xl font-bold text-center text-white">System Authentication</h1>
-        <p className="mt-1 text-center text-xs text-slate-400">
-          Sign in to access Multi-Agent Supply Chain Intelligence
-        </p>
-
-        {/* Role toggle */}
-        <div className="mt-6 grid grid-cols-2 rounded-xl border border-slate-800 bg-slate-950 p-1">
-          <button
-            type="button"
-            onClick={() => {
-              setRole("user");
-              setEmail("customer@enterprise.io");
-            }}
-            className={`rounded-lg py-2 text-xs font-semibold transition ${
-              role === "user"
-                ? "bg-blue-600 text-white shadow"
-                : "text-slate-400 hover:text-white"
-            }`}
+          {/* Logo */}
+          <Link
+            to="/"
+            className="group flex items-center gap-2.5 text-2xl font-black text-slate-900 tracking-tight justify-center mb-6"
           >
-            Customer Store
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setRole("admin");
-              setEmail("admin@supplyai.io");
-            }}
-            className={`rounded-lg py-2 text-xs font-semibold transition ${
-              role === "admin"
-                ? "bg-indigo-600 text-white shadow"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Admin / Supply Hub
-          </button>
-        </div>
-
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">Access Token / Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className={`w-full flex items-center justify-center gap-2 rounded-xl py-3 text-sm font-semibold text-white shadow-lg transition ${
-              role === "admin"
-                ? "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/30"
-                : "bg-blue-600 hover:bg-blue-500 shadow-blue-600/30"
-            }`}
-          >
-            <span>Sign In as {role === "admin" ? "Supply Administrator" : "Verified Customer"}</span>
-            <ArrowRight size={16} />
-          </button>
-        </form>
-
-        <div className="mt-6 text-center text-xs text-slate-400">
-          <Link to="/" className="hover:text-blue-400 transition">
-            ← Return to Homepage
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+              <ShoppingBag size={22} />
+            </span>
+            <span>E<span className="text-blue-600">kart</span></span>
           </Link>
+
+          <h1 className="text-2xl font-extrabold text-center text-slate-900">Welcome back</h1>
+          <p className="mt-1 text-center text-xs text-slate-500">
+            Sign in to access your orders, wishlist & fast checkout
+          </p>
+
+          <form onSubmit={handleLogin} className="mt-7 space-y-4">
+            {/* Email */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">Email Address</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-smooth w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900"
+                placeholder="you@example.com"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="space-y-1">
+              <label className="block text-xs font-bold text-slate-700">Password</label>
+              <div className="relative">
+                <input
+                  type={showPass ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-smooth w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-900"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-press w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 py-3 text-sm font-bold text-white shadow-md shadow-blue-500/25 transition-all duration-200 disabled:opacity-70"
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Signing in…
+                </span>
+              ) : (
+                <>
+                  <span>Sign In to Account</span>
+                  <ArrowRight size={16} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <div className="mt-6 flex items-center justify-center gap-2 text-xs text-slate-400 border-t border-slate-100 pt-4">
+            <Lock size={12} className="text-emerald-600" />
+            <span>256-Bit Encrypted Secure Authentication</span>
+          </div>
+
+          <div className="mt-4 text-center text-xs text-slate-500">
+            <Link to="/" className="text-blue-600 font-semibold hover:underline">
+              ← Return to Homepage
+            </Link>
+          </div>
         </div>
       </div>
     </div>

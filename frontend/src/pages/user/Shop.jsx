@@ -1,28 +1,115 @@
 import { useEffect, useState } from "react";
-import { Search, SlidersHorizontal, RefreshCw } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Search, ShoppingBag } from "lucide-react";
 import Navbar from "../../components/user/Navbar";
-
+import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import ProductCard from "../../components/user/ProductCard";
+import SortFilterBar from "../../components/user/SortFilterBar";
+import DealsStrip from "../../components/user/DealsStrip";
 import { API_BASE_URL } from "../../context/CartContext";
 
+const DEFAULT_SHOP_PRODUCTS = [
+  {
+    id: 1,
+    name: "boAt Rockerz 650 Pro Wireless Over-Ear Headphones",
+    category: "Headphones",
+    price: 39.99,
+    badge: "TOP SELLER",
+    image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "BOAT-ROC-650",
+  },
+  {
+    id: 2,
+    name: "boAt Nirvana Ion with 120 Hours Playback & Dual EQ",
+    category: "Earbuds",
+    price: 24.99,
+    badge: "HOT DEAL",
+    image_url: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "BOAT-NIR-ION",
+  },
+  {
+    id: 3,
+    name: "boAt Nirvana Ion 32dB Active Noise Cancellation ANC",
+    category: "Earbuds",
+    price: 26.50,
+    badge: "LOWEST PRICE",
+    image_url: "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "BOAT-NIR-32ANC",
+  },
+  {
+    id: 4,
+    name: "TECHIO AirBeats Wireless Magnetic Bluetooth Neckband",
+    category: "Neckbands",
+    price: 6.00,
+    badge: "SUPER DEAL",
+    image_url: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "TECH-AIR-500",
+  },
+  {
+    id: 5,
+    name: "Sony WH-1000XM4 Industry Leading Noise Canceling",
+    category: "Headphones",
+    price: 269.99,
+    badge: "PREMIUM",
+    image_url: "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "SNY-WH1000XM4",
+  },
+  {
+    id: 6,
+    name: "Apple AirPods Pro (2nd Gen) with MagSafe Case USB-C",
+    category: "Earbuds",
+    price: 249.00,
+    badge: "OFFICIAL",
+    image_url: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "APL-AIR-PRO2",
+  },
+  {
+    id: 7,
+    name: "Bose QuietComfort 45 Bluetooth Wireless Headphones",
+    category: "Headphones",
+    price: 279.00,
+    badge: "BESTSELLER",
+    image_url: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "BOS-QC-45",
+  },
+  {
+    id: 8,
+    name: "JBL Tune 760NC Lightweight Foldable Wireless Headphones",
+    category: "Headphones",
+    price: 79.99,
+    badge: "POPULAR",
+    image_url: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fm=webp&fit=crop&w=600&q=80",
+    sku: "JBL-TUNE-760",
+  },
+];
+
 function Shop() {
+  const [searchParams] = useSearchParams();
+  const initialSearch = searchParams.get("search") || "";
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState("ALL");
-  const [sortBy, setSortBy] = useState("default");
+  const [sortBy, setSortBy] = useState("relevance");
+  const [minRating, setMinRating] = useState(0);
 
   const loadProducts = () => {
     setLoading(true);
     fetch(`${API_BASE_URL}/products/`)
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        setProducts(data);
+        if (Array.isArray(data) && data.length > 0) {
+          setProducts(data);
+        } else {
+          setProducts(DEFAULT_SHOP_PRODUCTS);
+        }
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error loading products:", err);
+        setProducts(DEFAULT_SHOP_PRODUCTS);
         setLoading(false);
       });
   };
@@ -31,132 +118,133 @@ function Shop() {
     loadProducts();
   }, []);
 
-  const categories = ["ALL", ...new Set(products.map((p) => p.category).filter(Boolean))];
+  useEffect(() => {
+    const q = searchParams.get("search");
+    if (q !== null) {
+      setSearchTerm(q);
+    }
+  }, [searchParams]);
 
-  const filteredProducts = products
+  const productList = Array.isArray(products) && products.length > 0 ? products : DEFAULT_SHOP_PRODUCTS;
+  const categories = Array.from(new Set(productList.map((p) => p.category).filter(Boolean)));
+
+  const activeFilterCount = (selectedCategory !== "ALL" ? 1 : 0) + (minRating > 0 ? 1 : 0);
+
+  const handleResetFilters = () => {
+    setSelectedCategory("ALL");
+    setMinRating(0);
+    setSearchTerm("");
+    setSortBy("relevance");
+  };
+
+  const filteredProducts = productList
     .filter((product) => {
+      const name = (product.name || "").toLowerCase();
+      const sku = (product.sku || "").toLowerCase();
+      const category = (product.category || "").toLowerCase();
+      const term = searchTerm.toLowerCase();
+
       const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.category && product.category.toLowerCase().includes(searchTerm.toLowerCase()));
+        name.includes(term) ||
+        sku.includes(term) ||
+        category.includes(term);
       const matchesCat = selectedCategory === "ALL" || product.category === selectedCategory;
-      return matchesSearch && matchesCat;
+      const matchesRating = minRating === 0 || (product.id ? (product.id % 5) + 1 >= minRating : true);
+      return matchesSearch && matchesCat && matchesRating;
     })
     .sort((a, b) => {
-      if (sortBy === "price-low") return (a.price || 0) - (b.price || 0);
-      if (sortBy === "price-high") return (b.price || 0) - (a.price || 0);
-      if (sortBy === "name") return a.name.localeCompare(b.name);
-      return a.id - b.id;
+      if (sortBy === "price_asc") return (a.price || 0) - (b.price || 0);
+      if (sortBy === "price_desc") return (b.price || 0) - (a.price || 0);
+      if (sortBy === "rating") return (b.id || 0) - (a.id || 0);
+      if (sortBy === "newest") return (b.id || 0) - (a.id || 0);
+      return 0; // relevance
     });
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between pb-20 lg:pb-0">
       <Navbar />
 
-      <main className="flex-grow mx-auto w-full max-w-7xl px-6 py-12">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800">
+      {/* Sticky Flipkart/Amazon Sort & Filter Bar */}
+      <SortFilterBar
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        minRating={minRating}
+        onMinRatingChange={setMinRating}
+        activeFilterCount={activeFilterCount}
+        onResetFilters={handleResetFilters}
+      />
+
+      <main className="flex-grow mx-auto w-full max-w-7xl px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+        {/* Top Search & Results Counter Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-white">Store Catalog</h1>
-            <p className="mt-1 text-sm text-slate-400">
-              Browse inventory backed by autonomous AI procurement & verified suppliers.
+            <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+              {selectedCategory === "ALL" ? "All Products" : selectedCategory}
+            </h1>
+            <p className="text-xs text-slate-500">
+              Showing {filteredProducts.length} items &middot; Fast delivery available
             </p>
           </div>
 
-          {/* Search bar */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          {/* Quick in-page search input */}
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
             <input
               type="text"
-              placeholder="Search components or SKU..."
+              placeholder="Search in these results..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-xl border border-slate-800 bg-slate-900/90 pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-full border border-slate-200 bg-white pl-9 pr-4 py-1.5 text-xs text-slate-900 placeholder-slate-400 shadow-xs focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
             />
           </div>
         </div>
 
-        {/* Filters and Controls */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-          {/* Category Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`rounded-xl px-4 py-2 text-xs font-semibold transition ${
-                  selectedCategory === cat
-                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
-                    : "border border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:text-white"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Sort Selector & Refresh */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-300">
-              <SlidersHorizontal size={14} className="text-slate-400" />
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="bg-transparent text-xs text-white focus:outline-none cursor-pointer"
-              >
-                <option value="default" className="bg-slate-900">Featured</option>
-                <option value="price-low" className="bg-slate-900">Price: Low to High</option>
-                <option value="price-high" className="bg-slate-900">Price: High to Low</option>
-                <option value="name" className="bg-slate-900">Name: A to Z</option>
-              </select>
-            </div>
-
-            <button
-              onClick={loadProducts}
-              className="rounded-xl border border-slate-800 bg-slate-900/80 p-2 text-slate-400 hover:text-white transition"
-              title="Refresh Products"
-            >
-              <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
-            </button>
-          </div>
-        </div>
-
-        {/* Product Grid */}
-        <div className="mt-10">
+        {/* 2-Column Mobile & 4-Column Desktop Product Grid */}
+        <div>
           {loading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {[1, 2, 3, 4, 5, 6].map((n) => (
-                <div key={n} className="h-80 rounded-2xl bg-slate-900/50 animate-pulse border border-slate-800"></div>
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                <div key={n} className="h-64 sm:h-80 rounded-2xl bg-white animate-pulse border border-slate-200"></div>
               ))}
             </div>
           ) : filteredProducts.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-800 p-16 text-center">
-              <div className="text-5xl mb-4">🔍</div>
-              <h3 className="text-lg font-semibold text-white">No products found</h3>
-              <p className="mt-1 text-sm text-slate-400">
-                Try adjusting your search criteria or category filter.
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center my-6">
+              <ShoppingBag size={44} className="mx-auto text-slate-300 mb-2" />
+              <h3 className="text-base font-bold text-slate-900">No products match your filters</h3>
+              <p className="mt-1 text-xs text-slate-500">
+                Try resetting filters or adjusting search keyword.
               </p>
               <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setSelectedCategory("ALL");
-                }}
-                className="mt-4 rounded-xl bg-blue-600 px-5 py-2 text-xs font-semibold text-white hover:bg-blue-500"
+                onClick={handleResetFilters}
+                className="mt-4 rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
               >
-                Reset Filters
+                Reset All Filters
               </button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+              {filteredProducts.map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
               ))}
             </div>
           )}
         </div>
+
+        {/* Promotional Deals Strip Banner */}
+        <div className="mt-8">
+          <DealsStrip
+            title="Top Sale Deals"
+            subtitle="Shop at unbeatable prices & grab limited-time coupons"
+            to="/shop"
+          />
+        </div>
       </main>
 
       <Footer />
+      <BottomNav />
     </div>
   );
 }

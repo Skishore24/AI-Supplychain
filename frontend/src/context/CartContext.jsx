@@ -23,6 +23,25 @@ export function CartProvider({ children }) {
     }
   });
 
+  const DEFAULT_USER = {
+    name: "Alex Johnson",
+    email: "alex.johnson@enterprise-tech.io",
+    phone: "+1 (555) 234-5678",
+    primaryAddress: "450 Innovation Parkway, Suite 10, Austin TX 78701",
+    membershipTier: "Gold Prime Member",
+    joinedDate: "March 2026",
+    avatar: "AJ"
+  };
+
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ekart_user");
+      return saved ? JSON.parse(saved) : DEFAULT_USER;
+    } catch {
+      return DEFAULT_USER;
+    }
+  });
+
   const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
@@ -32,6 +51,24 @@ export function CartProvider({ children }) {
   useEffect(() => {
     localStorage.setItem("supplyai_orders", JSON.stringify(orders));
   }, [orders]);
+
+  useEffect(() => {
+    localStorage.setItem("ekart_user", JSON.stringify(user));
+  }, [user]);
+
+  const updateUser = (updatedData) => {
+    setUser((prev) => {
+      const next = { ...prev, ...updatedData };
+      if (updatedData.name && !updatedData.avatar) {
+        const parts = updatedData.name.trim().split(" ").filter(Boolean);
+        const initials = parts.map((w) => w[0]).join("").toUpperCase().slice(0, 2);
+        next.avatar = initials || "U";
+      }
+      localStorage.setItem("ekart_user", JSON.stringify(next));
+      return next;
+    });
+    showToast("Profile updated successfully in real time!", "success");
+  };
 
   const showToast = (message, type = "success") => {
     setToastMessage({ message, type });
@@ -158,6 +195,8 @@ export function CartProvider({ children }) {
   return (
     <CartContext.Provider
       value={{
+        user,
+        updateUser,
         cartItems,
         orders,
         addToCart,

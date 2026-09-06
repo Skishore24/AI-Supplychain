@@ -1,82 +1,134 @@
 import { Link } from "react-router-dom";
-import { Cpu, ShieldCheck, Zap, Activity } from "lucide-react";
+import { ShoppingBag, ShieldCheck, Truck, RotateCcw, Lock } from "lucide-react";
 
 function Footer() {
   return (
-    <footer className="border-t border-slate-800 bg-slate-950 text-slate-400">
-      <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          
-          {/* Brand */}
-          <div className="md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-white tracking-tight">
-              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 text-white shadow-lg shadow-blue-500/30">
-                <Cpu size={20} />
-              </span>
-              <span>Supply<span className="text-blue-500">AI</span></span>
-            </Link>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-slate-400">
-              Next-generation autonomous supply chain intelligence system. Seamlessly combining multi-agent decision models, real-time demand forecasting, and smart inventory optimization.
-            </p>
-            <div className="mt-6 flex items-center gap-4 text-xs">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 font-medium text-emerald-400 border border-emerald-500/20">
-                <Activity size={12} className="animate-pulse" /> Multi-Agent AI Active
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 font-medium text-blue-400 border border-blue-500/20">
-                <Zap size={12} /> Real-time Sync
-              </span>
+    <footer className="border-t border-slate-200 bg-white text-slate-600 mt-auto">
+      {/* Trust Badges Strip (Amazon / Flipkart Style) */}
+      <div className="border-b border-slate-100 bg-slate-50/70 py-6">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                <Truck size={20} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Free Fast Delivery</h4>
+                <p className="text-[11px] text-slate-500">On orders over $99</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                <ShieldCheck size={20} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">100% Original Products</h4>
+                <p className="text-[11px] text-slate-500">Direct from verified brands</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+                <RotateCcw size={20} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Easy 7-Day Returns</h4>
+                <p className="text-[11px] text-slate-500">Hassle-free replacements</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
+                <Lock size={20} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Secure Checkout</h4>
+                <p className="text-[11px] text-slate-500">256-bit encrypted payments</p>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Marketplace</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+      {/* Main Footer Links */}
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+
+          {/* Brand Col */}
+          <div className="md:col-span-1 font-poppins">
+            <Link to="/" className="flex items-center gap-2.5 text-xl font-heading font-black text-slate-900 tracking-tight">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-slate-950 via-slate-900 to-amber-700 text-white border border-amber-500/30 shadow-xs">
+                <ShoppingBag size={17} className="text-amber-400" />
+              </span>
+              <span className="font-heading font-black text-2xl text-slate-900">
+                E<span className="text-amber-500">kart</span>
+              </span>
+            </Link>
+            <p className="mt-4 text-xs leading-relaxed text-slate-500 font-poppins">
+              Your ultimate destination for authentic electronics, computing, smart accessories, and lifestyle essentials. Built for modern luxury retail convenience.
+            </p>
+          </div>
+
+          {/* Categories */}
+          <div className="font-poppins">
+            <h3 className="text-xs font-heading font-bold uppercase tracking-wider text-slate-950">Explore Catalog</h3>
+            <ul className="mt-4 space-y-2 text-xs">
               <li>
-                <Link to="/" className="transition hover:text-blue-400">Home</Link>
+                <Link to="/shop" className="text-slate-600 hover:text-amber-700 transition">All Products</Link>
               </li>
               <li>
-                <Link to="/shop" className="transition hover:text-blue-400">Browse Catalog</Link>
+                <Link to="/shop" className="text-slate-600 hover:text-amber-700 transition">Featured Deals</Link>
               </li>
               <li>
-                <Link to="/cart" className="transition hover:text-blue-400">Shopping Cart</Link>
+                <Link to="/shop" className="text-slate-600 hover:text-amber-700 transition">Best Sellers</Link>
               </li>
               <li>
-                <Link to="/orders" className="transition hover:text-blue-400">Track Orders</Link>
+                <Link to="/shop" className="text-slate-600 hover:text-amber-700 transition">New Arrivals</Link>
               </li>
             </ul>
           </div>
 
-          {/* Admin & AI Hub */}
+          {/* Customer Service */}
           <div>
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-white">Supply Chain Hub</h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">Customer Care</h3>
+            <ul className="mt-4 space-y-2 text-xs">
               <li>
-                <Link to="/admin" className="transition hover:text-indigo-400">Admin Dashboard</Link>
+                <Link to="/orders" className="text-slate-600 hover:text-blue-600 transition">Track Your Order</Link>
               </li>
               <li>
-                <Link to="/admin/products" className="transition hover:text-indigo-400">Product Manager</Link>
+                <Link to="/cart" className="text-slate-600 hover:text-blue-600 transition">Shopping Bag</Link>
               </li>
               <li>
-                <Link to="/admin/suppliers" className="transition hover:text-indigo-400">Supplier AI Optimizer</Link>
+                <Link to="/profile" className="text-slate-600 hover:text-blue-600 transition">Account & Profile</Link>
               </li>
               <li>
-                <Link to="/admin/inventory" className="transition hover:text-indigo-400">Stock & Reorder Alerts</Link>
+                <span className="text-slate-400">Help Center (24/7)</span>
               </li>
-              <li>
-                <Link to="/admin/ai-agents" className="transition hover:text-indigo-400">AI Agents Sandbox</Link>
-              </li>
+            </ul>
+          </div>
+
+          {/* Policies & Safe Shopping */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">Buyer Protection</h3>
+            <ul className="mt-4 space-y-2 text-xs text-slate-500">
+              <li>100% Genuine Quality Guarantee</li>
+              <li>Certified Payment Gateways</li>
+              <li>Instant Shipment Notifications</li>
+              <li>Cash on Delivery & Cards Accepted</li>
             </ul>
           </div>
 
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between border-t border-slate-800/80 pt-8 sm:flex-row text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} SupplyAI Intelligence Platform. All rights reserved.</p>
-          <div className="mt-4 flex items-center gap-6 sm:mt-0">
-            <span className="flex items-center gap-1 text-slate-400">
-              <ShieldCheck size={14} className="text-blue-400" /> Enterprise-Grade AI Safety
-            </span>
+        <div className="mt-12 flex flex-col items-center justify-between border-t border-slate-200 pt-6 sm:flex-row text-xs text-slate-400">
+          <p>© {new Date().getFullYear()} Ekart Inc. All rights reserved.</p>
+          <div className="mt-3 flex items-center gap-4 sm:mt-0 text-slate-400">
+            <span>Privacy Policy</span>
+            <span>•</span>
+            <span>Terms of Service</span>
+            <span>•</span>
+            <span>Security</span>
           </div>
         </div>
       </div>

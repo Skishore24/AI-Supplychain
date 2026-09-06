@@ -2,13 +2,40 @@
 
 @layer base {
   :root {
-    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-poppins: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-heading: 'Outfit', 'Poppins', sans-serif;
+    --font-luxury: 'Playfair Display', Georgia, serif;
+    --font-cinzel: 'Cinzel', 'Playfair Display', Georgia, serif;
+    --sans: var(--font-poppins);
+
+    /* Luxury Color Palette Tokens */
+    --lux-gold: #C5A880;
+    --lux-gold-rich: #D4AF37;
+    --lux-gold-light: #FBF8F3;
+    --lux-gold-border: rgba(197, 168, 128, 0.32);
+    --lux-gold-glow: rgba(212, 175, 55, 0.22);
+    --lux-black: #0B0F19;
+    --lux-onyx: #121826;
+    --lux-surface: #FAF9F6;
+    --lux-card: #FFFFFF;
+    --lux-emerald: #059669;
+
+    /* Easing curves */
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
+    /* Timing */
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
   }
 
   body {
-    font-family: var(--sans);
-    background-color: #0f172a;
-    color: #f8fafc;
+    font-family: var(--font-poppins);
+    letter-spacing: -0.015em;
+    background-color: #FAF9F6;
+    color: #0F172A;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -16,51 +43,344 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.02em;
+  }
+
   * {
     box-sizing: border-box;
   }
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ── Typography & Luxury Palette Utilities ────────────────────────────── */
+.font-poppins {
+  font-family: var(--font-poppins);
 }
 
-::-webkit-scrollbar-track {
-  background: #0f172a;
+.font-heading {
+  font-family: var(--font-heading);
 }
 
-::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
+.font-luxury {
+  font-family: var(--font-luxury);
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+.font-cinzel {
+  font-family: var(--font-cinzel);
 }
 
-/* Glassmorphism utilities */
-.glass-panel {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.lux-gradient-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #E6CA65 50%, #C5A880 100%);
 }
 
-.glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+.lux-gradient-dark {
+  background: linear-gradient(135deg, #0B0F19 0%, #1A2234 50%, #0F172A 100%);
 }
 
-.gradient-border {
-  position: relative;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
-  border: 1px solid rgba(99, 102, 241, 0.3);
+.lux-gold-badge {
+  background: linear-gradient(135deg, #FBF8F3 0%, #F5EEDB 100%);
+  color: #8C6D37;
+  border: 1px solid rgba(212, 175, 55, 0.35);
 }
 
+.lux-text-gold {
+  background: linear-gradient(135deg, #BF953F 0%, #FCF6BA 25%, #B38728 50%, #FBF5B7 75%, #AA771C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.lux-card {
+  background-color: #FFFFFF;
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  box-shadow: 0 4px 20px -2px rgba(11, 15, 25, 0.04), 0 2px 6px -1px rgba(11, 15, 25, 0.02);
+}
+
+.lux-card:hover {
+  border-color: rgba(197, 168, 128, 0.45);
+  box-shadow: 0 12px 30px -4px rgba(11, 15, 25, 0.08), 0 0 0 1px rgba(197, 168, 128, 0.25);
+}
+
+.lux-btn-gold {
+  background: linear-gradient(135deg, #D4AF37 0%, #C5A880 100%);
+  color: #0B0F19;
+  font-weight: 700;
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.lux-btn-gold:hover {
+  background: linear-gradient(135deg, #E6CA65 0%, #D4AF37 100%);
+  box-shadow: 0 6px 20px -2px rgba(212, 175, 55, 0.35);
+  transform: translateY(-1px);
+}
+
+.lux-btn-dark {
+  background: #0B0F19;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.25s var(--ease-smooth);
+}
+
+.lux-btn-dark:hover {
+  background: #1A2234;
+  border-color: rgba(197, 168, 128, 0.4);
+  box-shadow: 0 6px 20px -2px rgba(11, 15, 25, 0.25);
+  transform: translateY(-1px);
+}
+
+/* ── Reduced Motion Support ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ── Page Transition ─────────────────────────────────────────────────── */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.page-enter {
+  animation: page-enter 0.2s var(--ease-out-quart) forwards;
+}
+
+/* ── Fade In ─────────────────────────────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s var(--ease-smooth) both;
+}
+
+/* ── Slide Up ────────────────────────────────────────────────────────── */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.45s var(--ease-out-quart) both;
+}
+
+/* ── Slide Down (toast) ──────────────────────────────────────────────── */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s var(--ease-spring) both;
+}
+
+/* ── Slide In Left ───────────────────────────────────────────────────── */
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s var(--ease-out-quart) both;
+}
+
+/* ── Scale In (badges, modals) ───────────────────────────────────────── */
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s var(--ease-spring) both;
+}
+
+/* ── Pop (icon active state) ─────────────────────────────────────────── */
+@keyframes icon-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.animate-icon-pop {
+  animation: icon-pop 0.35s var(--ease-spring);
+}
+
+/* ── Stagger delays (apply to children) ─────────────────────────────── */
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+
+/* ── Shimmer Skeleton ───────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 12px;
+}
+
+/* ── Glow Pulse ─────────────────────────────────────────────────────── */
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 70, 229, 0); }
+  50%       { box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.12); }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 2.5s ease-in-out infinite;
+}
+
+/* ── Gradient Shift (Hero) ───────────────────────────────────────────── */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* ── Toast Progress Bar ──────────────────────────────────────────────── */
+@keyframes progress-shrink {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+.toast-progress {
+  animation: progress-shrink 3s linear forwards;
+}
+
+/* ── Pulse Slow ──────────────────────────────────────────────────────── */
 .animate-pulse-slow {
   animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* ── Card utilities ──────────────────────────────────────────────────── */
+.ecom-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+  transition: border-color 250ms var(--ease-smooth), box-shadow 250ms var(--ease-smooth), transform 250ms var(--ease-spring);
+}
+
+.ecom-card:hover {
+  border-color: #bfdbfe;
+  box-shadow: 0 12px 28px -6px rgba(59, 130, 246, 0.12), 0 4px 8px -4px rgba(0,0,0,0.06);
+  transform: translateY(-3px);
+}
+
+/* ── Glassmorphism ───────────────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Smooth focus ring ───────────────────────────────────────────────── */
+.focus-ring {
+  transition: box-shadow 200ms var(--ease-smooth), border-color 200ms var(--ease-smooth);
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+}
+
+/* ── Floating label input ────────────────────────────────────────────── */
+.input-smooth {
+  transition: border-color 200ms var(--ease-smooth),
+              box-shadow 200ms var(--ease-smooth),
+              background-color 200ms var(--ease-smooth);
+}
+
+.input-smooth:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ── Button press effect ─────────────────────────────────────────────── */
+.btn-press {
+  transition: transform 100ms var(--ease-smooth), box-shadow 100ms var(--ease-smooth);
+}
+
+.btn-press:active {
+  transform: scale(0.96);
+}
+
+/* ── No scrollbar ────────────────────────────────────────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Sidebar active indicator ────────────────────────────────────────── */
+@keyframes nav-indicator-enter {
+  from { transform: scaleY(0); opacity: 0; }
+  to   { transform: scaleY(1); opacity: 1; }
+}
+
+.nav-indicator {
+  animation: nav-indicator-enter 0.25s var(--ease-spring) both;
+}
+
+/* ── Floating card shadow on scroll ──────────────────────────────────── */
+.navbar-scrolled {
+  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.1) !important;
 }

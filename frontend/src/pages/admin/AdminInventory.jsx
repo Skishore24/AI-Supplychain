@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { CheckCircle2, Plus, Minus, Search, Edit3, X } from "lucide-react";
 import AdminLayout from "./AdminLayout";
-
 import { API_BASE_URL } from "../../context/CartContext";
 
 function AdminInventory() {
@@ -15,13 +14,14 @@ function AdminInventory() {
   const loadInventory = () => {
     setLoading(true);
     fetch(`${API_BASE_URL}/inventory/detailed`)
-      .then((res) => res.json())
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        setInventoryList(data);
+        setInventoryList(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error loading inventory:", err);
+        setInventoryList([]);
         setLoading(false);
       });
   };
@@ -94,33 +94,33 @@ function AdminInventory() {
 
   return (
     <AdminLayout
-      title="Inventory & Stock Health Control"
-      subtitle="Track stock levels, configure autonomous safety thresholds, and monitor replenishment."
+      title="Warehouse Inventory & Stock Control"
+      subtitle="Track physical units on hand, reorder thresholds, and quick replenishment."
       onRefresh={loadInventory}
       refreshing={loading}
     >
       {notification && (
-        <div className="mb-6 flex items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-950/80 p-4 text-emerald-300 text-xs font-semibold">
+        <div className="mb-6 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 text-xs font-bold shadow-xs">
           <CheckCircle2 size={16} />
           <span>{notification}</span>
         </div>
       )}
 
       {/* Top Inventory Summary Cards */}
-      <div className="grid gap-6 sm:grid-cols-3 mb-8">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Total Tracked SKUs</span>
-          <div className="mt-2 text-2xl font-bold text-white">{inventoryList.length}</div>
+      <div className="grid gap-6 sm:grid-cols-3 mb-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Tracked SKUs</span>
+          <div className="mt-2 text-2xl font-black text-slate-900">{inventoryList.length}</div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Total Physical Units</span>
-          <div className="mt-2 text-2xl font-bold text-blue-400">{totalStockUnits}</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Physical Stock Units</span>
+          <div className="mt-2 text-2xl font-black text-blue-600">{totalStockUnits}</div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Active Stockout Alerts</span>
-          <div className="mt-2 text-2xl font-bold text-amber-400">{lowStockCount} Items</div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Low Stock Alerts</span>
+          <div className="mt-2 text-2xl font-black text-amber-600">{lowStockCount} Items</div>
         </div>
       </div>
 
@@ -133,26 +133,26 @@ function AdminInventory() {
             placeholder="Search inventory items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-xl">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400 uppercase font-semibold">
+            <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-bold">
               <tr>
-                <th className="px-6 py-4">Product Name</th>
-                <th className="px-6 py-4">SKU</th>
-                <th className="px-6 py-4">Current Stock</th>
-                <th className="px-6 py-4">Reorder Threshold</th>
-                <th className="px-6 py-4">Stock Health</th>
-                <th className="px-6 py-4 text-right">Quick Stock Adjust</th>
+                <th className="px-6 py-3.5">Product Name</th>
+                <th className="px-6 py-3.5">SKU</th>
+                <th className="px-6 py-3.5">Stock on Hand</th>
+                <th className="px-6 py-3.5">Reorder Threshold</th>
+                <th className="px-6 py-3.5">Stock Status</th>
+                <th className="px-6 py-3.5 text-right">Quick Stock Adjust</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
@@ -161,51 +161,51 @@ function AdminInventory() {
                 </tr>
               ) : (
                 filtered.map((item) => (
-                  <tr key={item.id} className="transition hover:bg-slate-800/40">
-                    <td className="px-6 py-4 font-semibold text-white">
+                  <tr key={item.id} className="transition hover:bg-slate-50">
+                    <td className="px-6 py-3.5 font-bold text-slate-900">
                       <div>{item.product_name}</div>
                       <div className="text-[11px] text-slate-400 font-normal">{item.category}</div>
                     </td>
-                    <td className="px-6 py-4 font-mono text-slate-300">{item.sku}</td>
-                    <td className="px-6 py-4 font-bold text-white text-sm">
+                    <td className="px-6 py-3.5 font-mono text-slate-600">{item.sku}</td>
+                    <td className="px-6 py-3.5 font-black text-slate-900 text-sm">
                       {item.current_stock} units
                     </td>
-                    <td className="px-6 py-4 text-slate-300">
+                    <td className="px-6 py-3.5 text-slate-500 font-medium">
                       {item.reorder_level} units
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-3.5">
                       {item.current_stock === 0 ? (
-                        <span className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[11px] font-bold text-rose-400 border border-rose-500/20">
+                        <span className="rounded-md bg-rose-50 px-2.5 py-0.5 text-[11px] font-bold text-rose-700 border border-rose-200">
                           Out of Stock
                         </span>
                       ) : item.is_low_stock ? (
-                        <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-400 border border-amber-500/20">
-                          Low Stock (Reorder Needed)
+                        <span className="rounded-md bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-700 border border-amber-200">
+                          Low Stock
                         </span>
                       ) : (
-                        <span className="rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/20">
-                          Optimal Stock
+                        <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
+                          Healthy Stock
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-right space-x-2">
+                    <td className="px-6 py-3.5 text-right space-x-1.5">
                       <button
                         onClick={() => adjustStock(item.product_id, -5)}
-                        className="rounded-lg bg-slate-800 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white transition"
+                        className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
                         title="Reduce 5 units"
                       >
                         <Minus size={14} />
                       </button>
                       <button
                         onClick={() => adjustStock(item.product_id, 10)}
-                        className="rounded-lg bg-indigo-600/80 p-1.5 text-white hover:bg-indigo-600 transition"
+                        className="rounded-lg bg-indigo-600 p-1.5 text-white hover:bg-indigo-700 transition"
                         title="Add 10 units"
                       >
                         <Plus size={14} />
                       </button>
                       <button
                         onClick={() => openEditModal(item)}
-                        className="rounded-lg bg-slate-800 p-1.5 text-slate-300 hover:bg-slate-700 hover:text-white transition"
+                        className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition"
                         title="Configure thresholds"
                       >
                         <Edit3 size={14} />
@@ -221,61 +221,61 @@ function AdminInventory() {
 
       {/* Edit Thresholds Modal */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl border border-slate-800 bg-slate-900 p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
-              <h3 className="text-base font-bold text-white">Adjust Stock Level</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900">Adjust Stock Parameters</h3>
               <button
                 onClick={() => setEditingItem(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-slate-700"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleUpdate} className="mt-4 space-y-4 text-xs">
+            <form onSubmit={handleUpdate} className="mt-4 space-y-3.5 text-xs">
               <div>
-                <span className="text-slate-400 block mb-1">Product</span>
-                <span className="font-semibold text-white text-sm">{editingItem.product_name}</span>
+                <span className="text-slate-500 font-bold block mb-1">Product</span>
+                <span className="font-bold text-slate-900 text-sm">{editingItem.product_name}</span>
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Current Stock on Hand</label>
+                <label className="block text-slate-700 font-bold mb-1">Current Stock on Hand</label>
                 <input
                   type="number"
                   min="0"
                   required
                   value={formData.current_stock}
                   onChange={(e) => setFormData({ ...formData, current_stock: e.target.value })}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-400 mb-1">Safety Reorder Trigger Level</label>
+                <label className="block text-slate-700 font-bold mb-1">Safety Reorder Level</label>
                 <input
                   type="number"
                   min="1"
                   required
                   value={formData.reorder_level}
                   onChange={(e) => setFormData({ ...formData, reorder_level: e.target.value })}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-white focus:border-indigo-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setEditingItem(null)}
-                  className="rounded-xl border border-slate-800 px-4 py-2 text-slate-400 hover:text-white"
+                  className="rounded-xl border border-slate-300 px-4 py-2 text-slate-600 hover:bg-slate-50 font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-indigo-600 px-5 py-2 font-semibold text-white hover:bg-indigo-500 shadow-md"
+                  className="rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 shadow-sm"
                 >
-                  Update
+                  Update Stock
                 </button>
               </div>
             </form>

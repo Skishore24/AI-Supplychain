@@ -1,21 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trash2, ArrowRight, ShieldCheck, CheckCircle, Package } from "lucide-react";
+import { Trash2, ArrowRight, ShieldCheck, CheckCircle2, ShoppingBag, Truck } from "lucide-react";
 import Navbar from "../../components/user/Navbar";
-
+import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import { useCart } from "../../context/CartContext";
-
-const getCategoryIcon = (category = "") => {
-  const cat = category.toLowerCase();
-  if (cat.includes("batter") || cat.includes("energy")) return "🔋";
-  if (cat.includes("semi") || cat.includes("mcu") || cat.includes("arm")) return "⚡";
-  if (cat.includes("display") || cat.includes("oled") || cat.includes("screen")) return "🖥️";
-  if (cat.includes("motor") || cat.includes("actuator")) return "⚙️";
-  if (cat.includes("thermal") || cat.includes("heat")) return "❄️";
-  if (cat.includes("sensor")) return "📡";
-  return "📦";
-};
+import { getProductImage } from "../../components/user/ProductCard";
 
 function Cart() {
   const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal, checkout } = useCart();
@@ -50,47 +40,49 @@ function Cart() {
 
   if (orderCompleted) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between pb-16 md:pb-0">
         <Navbar />
-        <main className="flex-grow mx-auto w-full max-w-3xl px-6 py-16">
-          <div className="rounded-3xl border border-emerald-500/30 bg-slate-900/90 p-8 sm:p-12 text-center shadow-2xl backdrop-blur-md">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 mb-6">
-              <CheckCircle size={36} />
+        <main className="flex-grow mx-auto w-full max-w-2xl px-4 py-16 sm:px-6">
+          <div className="rounded-3xl border border-emerald-200 bg-white p-8 sm:p-12 text-center shadow-lg">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600 mb-6">
+              <CheckCircle2 size={36} />
             </div>
 
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Order Confirmed</span>
-            <h1 className="mt-2 text-3xl font-extrabold text-white">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Order Confirmed</span>
+            <h1 className="mt-2 text-2xl sm:text-3xl font-black text-slate-900">
               Thank You for Your Order!
             </h1>
-            <p className="mt-3 text-sm text-slate-300">
-              Order <span className="font-mono text-blue-400 font-bold">{orderCompleted.id}</span> has been processed and supply chain inventory decremented.
+            <p className="mt-2 text-xs sm:text-sm text-slate-500">
+              Your order <strong className="font-mono text-blue-600 font-bold">{orderCompleted.id}</strong> has been received and is being prepared for immediate dispatch.
             </p>
 
-            <div className="mt-8 rounded-2xl border border-slate-800 bg-slate-950/80 p-6 text-left text-sm space-y-3">
-              <div className="flex justify-between text-slate-400">
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/70 p-6 text-left text-xs sm:text-sm space-y-3">
+              <div className="flex justify-between text-slate-600">
                 <span>Customer:</span>
-                <span className="text-white font-medium">{orderCompleted.customer}</span>
+                <span className="text-slate-900 font-bold">{orderCompleted.customer}</span>
               </div>
-              <div className="flex justify-between text-slate-400">
+              <div className="flex justify-between text-slate-600">
                 <span>Shipping Address:</span>
-                <span className="text-white font-medium">{orderCompleted.address}</span>
+                <span className="text-slate-900 font-medium text-right max-w-xs">{orderCompleted.address}</span>
               </div>
-              <div className="flex justify-between text-slate-400 border-t border-slate-800 pt-3">
-                <span>Total Paid:</span>
-                <span className="text-lg font-bold text-emerald-400">${orderCompleted.total.toFixed(2)}</span>
+              <div className="flex justify-between text-slate-600 border-t border-slate-200 pt-3">
+                <span className="font-bold text-slate-900">Total Paid:</span>
+                <span className="text-lg font-black text-emerald-600">
+                  ${Number(orderCompleted?.total || 0).toFixed(2)}
+                </span>
               </div>
             </div>
 
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <button
                 onClick={() => navigate("/orders")}
-                className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-500 transition shadow-lg shadow-blue-600/30"
+                className="rounded-xl bg-blue-600 px-6 py-3 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm"
               >
-                View in My Orders
+                View in Track Orders
               </button>
               <Link
                 to="/shop"
-                className="rounded-xl border border-slate-700 bg-slate-800 px-6 py-3 text-sm font-semibold text-slate-200 hover:bg-slate-700 transition"
+                className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
               >
                 Continue Shopping
               </Link>
@@ -98,27 +90,30 @@ function Cart() {
           </div>
         </main>
         <Footer />
+        <BottomNav />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between pb-16 md:pb-0">
       <Navbar />
 
-      <main className="flex-grow mx-auto w-full max-w-7xl px-6 py-12">
-        <h1 className="text-3xl font-extrabold text-white mb-8">Your Shopping Cart</h1>
+      <main className="flex-grow mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-6">
+          Shopping Cart ({cartItems.length} {cartItems.length === 1 ? "item" : "items"})
+        </h1>
 
         {cartItems.length === 0 ? (
-          <div className="rounded-3xl border border-slate-800 bg-slate-900/60 p-16 text-center backdrop-blur-md">
-            <div className="text-6xl mb-4">🛒</div>
-            <h2 className="text-2xl font-bold text-white">Your Cart is Empty</h2>
-            <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto">
-              Explore our catalogue to add certified electronics, motors, sensors, and hardware components.
+          <div className="rounded-3xl border border-slate-200 bg-white p-12 sm:p-16 text-center shadow-xs">
+            <ShoppingBag size={56} className="mx-auto text-slate-300 mb-4" />
+            <h2 className="text-xl font-bold text-slate-900">Your Shopping Cart is Empty</h2>
+            <p className="mt-2 text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+              Looks like you haven't added anything to your cart yet. Explore our wide selection of components and tech hardware.
             </p>
             <Link
               to="/shop"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3 text-sm font-semibold text-white hover:bg-blue-500 shadow-lg shadow-blue-600/30 transition"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-amber-400 px-6 py-3 text-xs font-bold text-slate-950 hover:bg-amber-500 shadow-sm transition"
             >
               <span>Explore Store</span>
               <ArrowRight size={16} />
@@ -131,48 +126,52 @@ function Cart() {
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-900/80 p-5 backdrop-blur-md transition hover:border-slate-700"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs transition hover:border-slate-300"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-slate-800 text-3xl">
-                      {getCategoryIcon(item.category)}
+                    <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-slate-50 p-2 border border-slate-100 overflow-hidden">
+                      <img
+                        src={getProductImage(item)}
+                        alt={item.name}
+                        className="h-full w-full object-contain"
+                      />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-white">{item.name}</h3>
+                      <h3 className="text-sm font-bold text-slate-900 line-clamp-1">{item.name}</h3>
                       <p className="text-xs text-slate-400 font-mono">SKU: {item.sku}</p>
-                      <p className="text-sm font-bold text-blue-400 mt-1">${(item.price || 0).toFixed(2)} each</p>
+                      <p className="text-sm font-black text-slate-900 mt-1">${(item.price || 0).toFixed(2)} each</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+                  <div className="flex items-center justify-between sm:justify-end gap-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                     {/* Quantity controls */}
-                    <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950">
+                    <div className="flex items-center rounded-xl border border-slate-300 bg-slate-50">
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="px-3 py-1 text-slate-400 hover:text-white font-bold text-sm"
+                        className="px-3 py-1 text-slate-700 hover:bg-slate-200 font-extrabold text-xs rounded-l-xl transition"
                       >
                         -
                       </button>
-                      <span className="px-3 py-1 text-xs font-bold text-white min-w-8 text-center">
+                      <span className="px-3 py-1 text-xs font-bold text-slate-900 min-w-8 text-center">
                         {item.quantity}
                       </span>
                       <button
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="px-3 py-1 text-slate-400 hover:text-white font-bold text-sm"
+                        className="px-3 py-1 text-slate-700 hover:bg-slate-200 font-extrabold text-xs rounded-r-xl transition"
                       >
                         +
                       </button>
                     </div>
 
                     {/* Total for item */}
-                    <div className="text-right min-w-20 font-bold text-white">
+                    <div className="text-right min-w-20 font-black text-slate-900 text-sm">
                       ${((item.price || 0) * item.quantity).toFixed(2)}
                     </div>
 
                     {/* Delete button */}
                     <button
                       onClick={() => removeFromCart(item.id)}
-                      className="rounded-lg p-2 text-rose-400 hover:bg-rose-500/10 transition"
+                      className="rounded-lg p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                       title="Remove item"
                     >
                       <Trash2 size={16} />
@@ -181,103 +180,107 @@ function Cart() {
                 </div>
               ))}
 
-              <div className="flex justify-between items-center pt-2">
+              <div className="flex justify-between items-center pt-2 text-xs">
                 <button
                   onClick={clearCart}
-                  className="text-xs font-semibold text-slate-400 hover:text-rose-400 transition"
+                  className="font-semibold text-slate-500 hover:text-rose-600 transition"
                 >
-                  Clear entire cart
+                  Clear all items
                 </button>
-                <Link to="/shop" className="text-xs font-semibold text-blue-400 hover:text-blue-300">
-                  + Add more items
+                <Link to="/shop" className="font-bold text-blue-600 hover:text-blue-700">
+                  + Add more products
                 </Link>
               </div>
             </div>
 
             {/* Order Checkout Summary */}
-            <div className="rounded-3xl border border-slate-800 bg-slate-900/90 p-6 backdrop-blur-md shadow-xl space-y-6">
-              <h2 className="text-lg font-bold text-white border-b border-slate-800 pb-4">
-                Order & Shipping Summary
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
+              <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">
+                Order & Delivery Summary
               </h2>
 
               <form onSubmit={handlePlaceOrder} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Customer Name</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Customer Full Name</label>
                   <input
                     type="text"
                     required
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Email for Invoicing</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email for Receipt</label>
                   <input
                     type="email"
                     required
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Fulfillment Address</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Shipping Destination</label>
                   <textarea
                     rows={2}
                     required
                     value={shippingAddress}
                     onChange={(e) => setShippingAddress(e.target.value)}
-                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2 text-xs text-white focus:border-blue-500 focus:outline-none resize-none"
+                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-3.5 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none resize-none"
                   />
                 </div>
 
                 {/* Calculation breakdown */}
-                <div className="border-t border-slate-800 pt-4 space-y-2 text-xs">
-                  <div className="flex justify-between text-slate-400">
+                <div className="border-t border-slate-100 pt-4 space-y-2 text-xs">
+                  <div className="flex justify-between text-slate-500">
                     <span>Subtotal:</span>
-                    <span className="text-white font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="text-slate-900 font-bold">${subtotal.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Estimated Shipping:</span>
-                    <span className="text-white font-medium">
-                      {shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}
+                  <div className="flex justify-between text-slate-500">
+                    <span>Shipping Fee:</span>
+                    <span className="text-slate-900 font-bold">
+                      {shipping === 0 ? (
+                        <span className="text-emerald-600 font-bold">FREE</span>
+                      ) : (
+                        `$${shipping.toFixed(2)}`
+                      )}
                     </span>
                   </div>
-                  <div className="flex justify-between text-slate-400">
-                    <span>Estimated Tax (8%):</span>
-                    <span className="text-white font-medium">${tax.toFixed(2)}</span>
+                  <div className="flex justify-between text-slate-500">
+                    <span>Estimated Sales Tax (8%):</span>
+                    <span className="text-slate-900 font-bold">${tax.toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-bold text-white border-t border-slate-800 pt-3">
-                    <span>Grand Total:</span>
-                    <span className="text-blue-400 text-base">${total.toFixed(2)}</span>
+                  <div className="flex justify-between text-sm font-bold text-slate-900 border-t border-slate-100 pt-3">
+                    <span>Order Total:</span>
+                    <span className="text-blue-600 text-lg font-black">${total.toFixed(2)}</span>
                   </div>
                 </div>
 
                 <button
                   type="submit"
                   disabled={isCheckingOut}
-                  className="w-full rounded-xl bg-blue-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full rounded-xl bg-amber-400 hover:bg-amber-500 py-3.5 text-xs font-extrabold text-slate-950 shadow-sm transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isCheckingOut ? (
                     <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent"></div>
-                      <span>Dispatching Order...</span>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-r-transparent"></div>
+                      <span>Processing Order...</span>
                     </>
                   ) : (
                     <>
-                      <Package size={16} />
+                      <ShoppingBag size={16} />
                       <span>Confirm & Place Order</span>
                     </>
                   )}
                 </button>
               </form>
 
-              <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2">
-                <ShieldCheck size={14} className="text-emerald-400" />
-                <span>AI Automated Inventory Decrement Guarantee</span>
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-400 pt-2 border-t border-slate-100">
+                <ShieldCheck size={14} className="text-emerald-600" />
+                <span>100% Secure Checkout Guarantee</span>
               </div>
             </div>
           </div>
@@ -285,6 +288,7 @@ function Cart() {
       </main>
 
       <Footer />
+      <BottomNav />
     </div>
   );
 }

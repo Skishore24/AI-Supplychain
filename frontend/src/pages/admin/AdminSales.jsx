@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import AdminLayout from "./AdminLayout";
-
 import { API_BASE_URL } from "../../context/CartContext";
 
 function AdminSales() {
@@ -13,16 +12,17 @@ function AdminSales() {
   const loadSalesData = () => {
     setLoading(true);
     Promise.all([
-      fetch(`${API_BASE_URL}/sales/detailed`).then((r) => r.json()),
-      fetch(`${API_BASE_URL}/sales/analytics`).then((r) => r.json())
+      fetch(`${API_BASE_URL}/sales/detailed`).then((r) => (r.ok ? r.json() : [])),
+      fetch(`${API_BASE_URL}/sales/analytics`).then((r) => (r.ok ? r.json() : null))
     ])
       .then(([salesData, analyticsData]) => {
-        setSalesList(salesData);
+        setSalesList(Array.isArray(salesData) ? salesData : []);
         setAnalytics(analyticsData);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error loading sales:", err);
+        setSalesList([]);
         setLoading(false);
       });
   };
@@ -31,62 +31,64 @@ function AdminSales() {
     loadSalesData();
   }, []);
 
-  const filtered = salesList.filter(
-    (s) =>
-      s.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.sale_date.includes(searchTerm)
-  );
+  const filtered = Array.isArray(salesList)
+    ? salesList.filter(
+        (s) =>
+          (s.product_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (s.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+          String(s.sale_date || "").includes(searchTerm)
+      )
+    : [];
 
   return (
     <AdminLayout
-      title="Sales Logs & Demand Intelligence"
-      subtitle="Historical transaction stream, revenue velocity, and category sales breakdowns."
+      title="Sales Transactions & Order Logs"
+      subtitle="Historical customer checkout stream, revenue records, and category sales."
       onRefresh={loadSalesData}
       refreshing={loading}
     >
       {/* Analytics KPI Header */}
-      <div className="grid gap-6 sm:grid-cols-3 mb-8">
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Total Gross Revenue</span>
-          <div className="mt-2 text-3xl font-extrabold text-emerald-400">
+      <div className="grid gap-6 sm:grid-cols-3 mb-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Gross Sales Revenue</span>
+          <div className="mt-2 text-2xl font-black text-emerald-600">
             ${analytics ? analytics.total_revenue.toFixed(2) : "0.00"}
           </div>
-          <div className="mt-1 text-xs text-slate-400">From all completed checkouts</div>
+          <div className="mt-1 text-xs text-slate-500">From all customer orders</div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Total Units Dispatched</span>
-          <div className="mt-2 text-3xl font-extrabold text-white">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Units Fulfilled</span>
+          <div className="mt-2 text-2xl font-black text-slate-900">
             {analytics ? analytics.total_units_sold : 0} units
           </div>
-          <div className="mt-1 text-xs text-slate-400">Decremented from active inventory</div>
+          <div className="mt-1 text-xs text-slate-500">Decremented from active warehouse</div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <span className="text-xs text-slate-400">Total Transactions</span>
-          <div className="mt-2 text-3xl font-extrabold text-indigo-400">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Completed Orders</span>
+          <div className="mt-2 text-2xl font-black text-indigo-600">
             {analytics ? analytics.total_orders : 0} orders
           </div>
-          <div className="mt-1 text-xs text-slate-400">Recorded across store</div>
+          <div className="mt-1 text-xs text-slate-500">Recorded across store</div>
         </div>
       </div>
 
       {/* Category Revenue Breakdown */}
       {analytics && analytics.category_breakdown && analytics.category_breakdown.length > 0 && (
-        <div className="mb-10 rounded-3xl border border-slate-800 bg-slate-900/80 p-6 backdrop-blur-md shadow-xl">
-          <h2 className="text-base font-bold text-white mb-4">Category Demand Distribution</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">Category Distribution</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {analytics.category_breakdown.map((cat, idx) => (
               <div
                 key={idx}
-                className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4"
+                className="rounded-xl border border-slate-200 bg-slate-50 p-3"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-white text-sm">{cat.category}</span>
-                  <span className="text-xs font-mono text-slate-400">{cat.units} units</span>
+                  <span className="font-bold text-slate-900 text-xs">{cat.category}</span>
+                  <span className="text-[11px] font-mono text-slate-500">{cat.units} units</span>
                 </div>
-                <div className="mt-2 text-base font-bold text-emerald-400">
+                <div className="mt-1 text-sm font-black text-emerald-600">
                   ${cat.revenue.toFixed(2)}
                 </div>
               </div>
@@ -104,26 +106,26 @@ function AdminSales() {
             placeholder="Search sales transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-xl border border-slate-800 bg-slate-900 pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-xl">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-800 bg-slate-900/90 text-slate-400 uppercase font-semibold">
+            <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-bold">
               <tr>
-                <th className="px-6 py-4">Transaction ID</th>
-                <th className="px-6 py-4">Product Name</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Quantity Sold</th>
-                <th className="px-6 py-4">Unit Price</th>
-                <th className="px-6 py-4">Total Revenue</th>
-                <th className="px-6 py-4 text-right">Date</th>
+                <th className="px-6 py-3.5">Transaction</th>
+                <th className="px-6 py-3.5">Product Name</th>
+                <th className="px-6 py-3.5">Category</th>
+                <th className="px-6 py-3.5">Quantity</th>
+                <th className="px-6 py-3.5">Unit Price</th>
+                <th className="px-6 py-3.5">Revenue</th>
+                <th className="px-6 py-3.5 text-right">Date</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
@@ -132,14 +134,14 @@ function AdminSales() {
                 </tr>
               ) : (
                 filtered.map((s) => (
-                  <tr key={s.id} className="transition hover:bg-slate-800/40">
-                    <td className="px-6 py-4 font-mono text-slate-400">#TX-{s.id}</td>
-                    <td className="px-6 py-4 font-semibold text-white">{s.product_name}</td>
-                    <td className="px-6 py-4 text-slate-400">{s.category}</td>
-                    <td className="px-6 py-4 font-medium text-white">{s.quantity_sold} units</td>
-                    <td className="px-6 py-4 text-slate-300">${s.unit_price.toFixed(2)}</td>
-                    <td className="px-6 py-4 font-bold text-emerald-400">${s.total_revenue.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right font-mono text-slate-400">{s.sale_date}</td>
+                  <tr key={s.id} className="transition hover:bg-slate-50">
+                    <td className="px-6 py-3.5 font-mono text-slate-500 font-bold">#TX-{s.id}</td>
+                    <td className="px-6 py-3.5 font-bold text-slate-900">{s.product_name}</td>
+                    <td className="px-6 py-3.5 text-slate-600">{s.category}</td>
+                    <td className="px-6 py-3.5 font-semibold text-slate-800">{s.quantity_sold} units</td>
+                    <td className="px-6 py-3.5 text-slate-600">${s.unit_price.toFixed(2)}</td>
+                    <td className="px-6 py-3.5 font-black text-emerald-600">${s.total_revenue.toFixed(2)}</td>
+                    <td className="px-6 py-3.5 text-right font-mono text-slate-500">{s.sale_date}</td>
                   </tr>
                 ))
               )}
