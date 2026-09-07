@@ -4,7 +4,7 @@ import { AdminAuthProvider } from "./context/AdminAuthContext";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import { useEffect, useRef } from "react";
 
-// Customer Pages
+// Customer Storefront Pages
 import Home from "./pages/user/Home";
 import Shop from "./pages/user/Shop";
 import ProductDetails from "./pages/user/ProductDetails";
@@ -13,16 +13,25 @@ import Orders from "./pages/user/Orders";
 import Profile from "./pages/user/Profile";
 import Login from "./pages/user/Login";
 
-// Admin Supply Chain Pages
+// Admin Supply Chain Operations Pages
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
-import AdminSuppliers from "./pages/admin/AdminSuppliers";
+import AdminProductDetails from "./pages/admin/AdminProductDetails";
 import AdminInventory from "./pages/admin/AdminInventory";
+import AdminSuppliers from "./pages/admin/AdminSuppliers";
+import AdminPurchaseOrders from "./pages/admin/AdminPurchaseOrders";
 import AdminSales from "./pages/admin/AdminSales";
 import AdminAIAgents from "./pages/admin/AdminAIAgents";
+import AdminDemandForecasting from "./pages/admin/AdminDemandForecasting";
+import AdminRiskAlerts from "./pages/admin/AdminRiskAlerts";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
+import AdminSettings from "./pages/admin/AdminSettings";
 
-// Smooth page transition wrapper — triggers fade+slide animation on every route change
+// Smooth page transition wrapper
 function PageTransition({ children }) {
   const location = useLocation();
   const ref = useRef(null);
@@ -30,7 +39,6 @@ function PageTransition({ children }) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    // Re-trigger animation on each navigation
     el.classList.remove("page-enter");
     void el.offsetWidth; // reflow
     el.classList.add("page-enter");
@@ -47,7 +55,7 @@ function AppRoutes() {
   return (
     <PageTransition>
       <Routes>
-        {/* Customer E-Commerce Routes */}
+        {/* Customer Storefront Routes */}
         <Route path="/" element={<Home />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/product/:id" element={<ProductDetails />} />
@@ -56,10 +64,10 @@ function AppRoutes() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Admin Gateway Login (Public Entry to Admin Domain) */}
+        {/* Admin Gateway Login */}
         <Route path="/admin/login" element={<AdminLogin />} />
 
-        {/* Protected Admin Supply Chain Hub Routes (Requires Verified Admin Session) */}
+        {/* Protected Admin Operations Hub Routes */}
         <Route
           path="/admin"
           element={
@@ -77,10 +85,10 @@ function AppRoutes() {
           }
         />
         <Route
-          path="/admin/suppliers"
+          path="/admin/products/:id"
           element={
             <AdminProtectedRoute>
-              <AdminSuppliers />
+              <AdminProductDetails />
             </AdminProtectedRoute>
           }
         />
@@ -89,6 +97,22 @@ function AppRoutes() {
           element={
             <AdminProtectedRoute>
               <AdminInventory />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/suppliers"
+          element={
+            <AdminProtectedRoute>
+              <AdminSuppliers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/purchase-orders"
+          element={
+            <AdminProtectedRoute>
+              <AdminPurchaseOrders />
             </AdminProtectedRoute>
           }
         />
@@ -105,6 +129,62 @@ function AppRoutes() {
           element={
             <AdminProtectedRoute>
               <AdminAIAgents />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/demand-forecasting"
+          element={
+            <AdminProtectedRoute>
+              <AdminDemandForecasting />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/alerts"
+          element={
+            <AdminProtectedRoute>
+              <AdminRiskAlerts />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            <AdminProtectedRoute>
+              <AdminAnalytics />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <AdminProtectedRoute>
+              <AdminUsers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/notifications"
+          element={
+            <AdminProtectedRoute>
+              <AdminNotifications />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/audit-logs"
+          element={
+            <AdminProtectedRoute>
+              <AdminAuditLogs />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/settings"
+          element={
+            <AdminProtectedRoute>
+              <AdminSettings />
             </AdminProtectedRoute>
           }
         />

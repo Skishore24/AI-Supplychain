@@ -25,8 +25,10 @@ import Navbar from "../../components/user/Navbar";
 import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import ProductCard from "../../components/user/ProductCard";
-import { API_BASE_URL } from "../../context/CartContext";
+import api from "../../services/api";
 import { formatINR, toINR } from "../../utils/currency";
+import heroBanner from "../../assets/hero_banner.jpg";
+import categoryBanner from "../../assets/category_banner.jpg";
 
 function Home() {
   const [products, setProducts] = useState([]);
@@ -35,10 +37,9 @@ function Home() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/products/`)
-      .then((res) => (res.ok ? res.json() : []))
+    api.products.list({ limit: 50 })
       .then((data) => {
-        setProducts(Array.isArray(data) ? data : []);
+        setProducts(Array.isArray(data) ? data : data.items || []);
         setLoading(false);
       })
       .catch((err) => {
@@ -87,7 +88,12 @@ function Home() {
             
             {/* Left Large Featured Banner (emox flagship card) */}
             <div className="lg:col-span-8 rounded-3xl bg-gradient-to-tr from-slate-950 via-slate-900 to-blue-950 p-6 sm:p-10 text-white relative overflow-hidden flex flex-col justify-between min-h-[300px] sm:min-h-[360px] shadow-lg">
-              {/* Background ambient glow */}
+              {/* Background ambient glow and generated banner */}
+              <img
+                src={heroBanner}
+                alt="AI Supply Chain Hardware"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-30 mix-blend-luminosity scale-105"
+              />
               <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-blue-500/20 blur-3xl" />
               <div className="pointer-events-none absolute left-1/3 -bottom-16 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
 
@@ -144,6 +150,11 @@ function Home() {
             <div className="lg:col-span-4 flex flex-col gap-4">
               {/* Upper Banner: SALE UP TO 50% OFF */}
               <div className="rounded-3xl bg-gradient-to-tr from-cyan-600 via-teal-500 to-emerald-400 p-6 text-white relative overflow-hidden flex-1 flex flex-col justify-between shadow-md">
+                <img
+                  src={categoryBanner}
+                  alt="Industrial Components"
+                  className="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-25 mix-blend-overlay"
+                />
                 <div className="relative z-10">
                   <span className="text-[10px] font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-md">
                     FLASH PROMO

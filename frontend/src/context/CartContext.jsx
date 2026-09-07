@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toINR } from "../utils/currency";
+import api from "../services/api";
 
 const CartContext = createContext();
 
@@ -143,48 +144,52 @@ export function CartProvider({ children }) {
     const amountINR = customerInfo.amountINR || toINR(cartTotalUSD);
 
     try {
-      const payload = {
+      const orderPayload = {
         customer_name: customerInfo.name || "Valued Customer",
         customer_email: customerInfo.email || "customer@example.com",
         shipping_address: customerInfo.address || "123 Supply Chain Blvd, Suite 400",
         payment_method: paymentMethod,
-        payment_currency: "INR",
-        amount_inr: amountINR,
         items: cartItems.map((item) => ({
-          product_id: item.id,
-          quantity: item.quantity
+          product_id: Number(item.id),
+          quantity: Number(item.quantity)
         }))
       };
 
-      const response = await fetch(`${API_BASE_URL}/sales/checkout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-
-      if (!response.ok) {
-        throw new Error("Checkout failed on server");
+      let result;
+      try {
+        result = await api.orders.create(orderPayload);
+      } catch (e) {
+        // Fallback to legacy endpoint if needed
+        const response = await fetch(`${API_BASE_URL}/sales/checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...orderPayload,
+            amount_inr: amountINR,
+            payment_currency: "INR"
+          })
+        });
+        if (!response.ok) throw e;
+        result = await response.json();
       }
 
-      const result = await response.json();
-
       const newOrder = {
-        id: result.order_id || `ORD-${Date.now()}`,
-        date: result.date || new Date().toISOString().split("T")[0],
+        id: result.order_number || result.order_id || `ORD-${Date.now()}`,
+        date: result.created_at ? new Date(result.created_at).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
         total: result.total_amount || cartTotalUSD,
-        total_inr: result.total_inr || amountINR,
+        total_inr: result.total_amount ? toINR(result.total_amount) : amountINR,
         payment_method: result.payment_method || paymentMethod,
-        payment_currency: result.payment_currency || "INR",
-        transaction_id: result.transaction_id || `UPI/UTR/${Date.now().toString().slice(-8)}`,
+        payment_currency: "INR",
+        transaction_id: result.tracking_number || `UPI/UTR/${Date.now().toString().slice(-8)}`,
         items: result.items || [...cartItems],
-        status: "Processing (In Transit)",
-        customer: payload.customer_name,
-        address: payload.shipping_address
+        status: result.status || "Processing (In Transit)",
+        customer: orderPayload.customer_name,
+        address: orderPayload.shipping_address
       };
 
       setOrders((prev) => [newOrder, ...prev]);
       clearCart();
-      showToast(`Payment of ₹${amountINR.toLocaleString("en-IN")} confirmed via ${paymentMethod}!`, "success");
+      showToast(`Payment confirmed! Order ${newOrder.id} successfully placed.`, "success");
       return { success: true, order: newOrder };
     } catch (err) {
       console.warn("Backend checkout error, storing order locally:", err);
