@@ -18,6 +18,9 @@ class BatchOrderCreate(BaseModel):
     customer_name: Optional[str] = "Customer"
     customer_email: Optional[str] = ""
     shipping_address: Optional[str] = ""
+    payment_method: Optional[str] = "UPI"
+    payment_currency: Optional[str] = "INR"
+    amount_inr: Optional[float] = None
     items: List[BatchOrderItem]
 
 

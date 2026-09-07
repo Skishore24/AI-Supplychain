@@ -94,8 +94,8 @@ function AdminInventory() {
 
   return (
     <AdminLayout
-      title="Warehouse Inventory & Stock Control"
-      subtitle="Track physical units on hand, reorder thresholds, and quick replenishment."
+      title="Warehouse Stock & Inventory"
+      subtitle="Track physical units on hand, receive automatic low-stock warnings, and adjust quantities."
       onRefresh={loadInventory}
       refreshing={loading}
     >
@@ -106,20 +106,28 @@ function AdminInventory() {
         </div>
       )}
 
+      {/* UX Help Tip Banner */}
+      <div className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-200/70 bg-amber-50/50 p-4 text-xs text-slate-700 shadow-xs">
+        <span className="text-base leading-none">💡</span>
+        <div className="leading-relaxed">
+          <strong className="text-slate-900 font-bold">How Inventory Management Works:</strong> When customers place orders, warehouse stock is automatically decremented. Use the <span className="font-bold text-slate-900">+10</span> or <span className="font-bold text-slate-900">-5</span> buttons below to log new deliveries or adjustments, or click <span className="font-bold text-slate-900">Edit</span> to customize safety reorder limits.
+        </div>
+      </div>
+
       {/* Top Inventory Summary Cards */}
       <div className="grid gap-6 sm:grid-cols-3 mb-6">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Tracked SKUs</span>
-          <div className="mt-2 text-2xl font-black text-slate-900">{inventoryList.length}</div>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Tracked Products</span>
+          <div className="mt-2 text-2xl font-black text-slate-900">{inventoryList.length} items</div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Physical Stock Units</span>
-          <div className="mt-2 text-2xl font-black text-blue-600">{totalStockUnits}</div>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Physical Units</span>
+          <div className="mt-2 text-2xl font-black text-blue-600">{totalStockUnits} units</div>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Low Stock Alerts</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Restock Warnings</span>
           <div className="mt-2 text-2xl font-black text-amber-600">{lowStockCount} Items</div>
         </div>
       </div>
@@ -130,10 +138,10 @@ function AdminInventory() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
             type="text"
-            placeholder="Search inventory items..."
+            placeholder="Search by product name, SKU, or category..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-indigo-600 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 bg-white pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:outline-none"
           />
         </div>
       </div>
@@ -144,12 +152,12 @@ function AdminInventory() {
           <table className="w-full text-left text-xs">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-600 uppercase font-bold">
               <tr>
-                <th className="px-6 py-3.5">Product Name</th>
-                <th className="px-6 py-3.5">SKU</th>
+                <th className="px-6 py-3.5">Product Details</th>
+                <th className="px-6 py-3.5">SKU Code</th>
                 <th className="px-6 py-3.5">Stock on Hand</th>
-                <th className="px-6 py-3.5">Reorder Threshold</th>
-                <th className="px-6 py-3.5">Stock Status</th>
-                <th className="px-6 py-3.5 text-right">Quick Stock Adjust</th>
+                <th className="px-6 py-3.5">Reorder Limit</th>
+                <th className="px-6 py-3.5">Status</th>
+                <th className="px-6 py-3.5 text-right">Quick Stock Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -161,7 +169,7 @@ function AdminInventory() {
                 </tr>
               ) : (
                 filtered.map((item) => (
-                  <tr key={item.id} className="transition hover:bg-slate-50">
+                  <tr key={item.id} className="transition hover:bg-amber-50/30">
                     <td className="px-6 py-3.5 font-bold text-slate-900">
                       <div>{item.product_name}</div>
                       <div className="text-[11px] text-slate-400 font-normal">{item.category}</div>
@@ -184,31 +192,34 @@ function AdminInventory() {
                         </span>
                       ) : (
                         <span className="rounded-md bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200">
-                          Healthy Stock
+                          In Stock
                         </span>
                       )}
                     </td>
                     <td className="px-6 py-3.5 text-right space-x-1.5">
                       <button
                         onClick={() => adjustStock(item.product_id, -5)}
-                        className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 py-1 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition font-bold text-[11px] cursor-pointer"
                         title="Reduce 5 units"
                       >
-                        <Minus size={14} />
+                        <Minus size={12} />
+                        <span>-5</span>
                       </button>
                       <button
                         onClick={() => adjustStock(item.product_id, 10)}
-                        className="rounded-lg bg-indigo-600 p-1.5 text-white hover:bg-indigo-700 transition"
+                        className="btn-press inline-flex items-center gap-1 rounded-lg bg-slate-950 px-2.5 py-1 text-white hover:bg-amber-600 transition font-bold text-[11px] cursor-pointer shadow-xs"
                         title="Add 10 units"
                       >
-                        <Plus size={14} />
+                        <Plus size={12} />
+                        <span>+10</span>
                       </button>
                       <button
                         onClick={() => openEditModal(item)}
-                        className="rounded-lg border border-slate-200 bg-slate-50 p-1.5 text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-slate-700 hover:bg-amber-50 hover:text-amber-800 hover:border-amber-300 transition font-semibold text-[11px] cursor-pointer"
                         title="Configure thresholds"
                       >
-                        <Edit3 size={14} />
+                        <Edit3 size={12} />
+                        <span>Edit</span>
                       </button>
                     </td>
                   </tr>
@@ -247,7 +258,7 @@ function AdminInventory() {
                   required
                   value={formData.current_stock}
                   onChange={(e) => setFormData({ ...formData, current_stock: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-amber-500 focus:outline-none"
                 />
               </div>
 
@@ -259,7 +270,7 @@ function AdminInventory() {
                   required
                   value={formData.reorder_level}
                   onChange={(e) => setFormData({ ...formData, reorder_level: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-indigo-600 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 focus:border-amber-500 focus:outline-none"
                 />
               </div>
 
@@ -273,7 +284,7 @@ function AdminInventory() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-indigo-600 px-5 py-2 font-bold text-white hover:bg-indigo-700 shadow-sm"
+                  className="btn-press rounded-xl bg-slate-950 px-5 py-2 font-bold text-white hover:bg-amber-600 shadow-sm transition-colors"
                 >
                   Update Stock
                 </button>

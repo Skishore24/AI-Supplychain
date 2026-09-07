@@ -8,6 +8,7 @@ class ProductCreate(BaseModel):
     sku: str
     price: Optional[float] = 0.0
     description: Optional[str] = ""
+    image_url: Optional[str] = ""
 
 
 class ProductUpdate(BaseModel):
@@ -16,6 +17,7 @@ class ProductUpdate(BaseModel):
     sku: Optional[str] = None
     price: Optional[float] = None
     description: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class ProductResponse(ProductCreate):

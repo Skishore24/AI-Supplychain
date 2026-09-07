@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { toINR } from "../utils/currency";
 
 const CartContext = createContext();
 
@@ -137,11 +138,18 @@ export function CartProvider({ children }) {
   const checkout = async (customerInfo = {}) => {
     if (cartItems.length === 0) return { success: false, error: "Cart is empty" };
 
+    const paymentMethod = customerInfo.paymentMethod || "UPI (Google Pay)";
+    const cartTotalUSD = getCartTotal();
+    const amountINR = customerInfo.amountINR || toINR(cartTotalUSD);
+
     try {
       const payload = {
         customer_name: customerInfo.name || "Valued Customer",
         customer_email: customerInfo.email || "customer@example.com",
         shipping_address: customerInfo.address || "123 Supply Chain Blvd, Suite 400",
+        payment_method: paymentMethod,
+        payment_currency: "INR",
+        amount_inr: amountINR,
         items: cartItems.map((item) => ({
           product_id: item.id,
           quantity: item.quantity
@@ -163,7 +171,11 @@ export function CartProvider({ children }) {
       const newOrder = {
         id: result.order_id || `ORD-${Date.now()}`,
         date: result.date || new Date().toISOString().split("T")[0],
-        total: result.total_amount || getCartTotal(),
+        total: result.total_amount || cartTotalUSD,
+        total_inr: result.total_inr || amountINR,
+        payment_method: result.payment_method || paymentMethod,
+        payment_currency: result.payment_currency || "INR",
+        transaction_id: result.transaction_id || `UPI/UTR/${Date.now().toString().slice(-8)}`,
         items: result.items || [...cartItems],
         status: "Processing (In Transit)",
         customer: payload.customer_name,
@@ -172,14 +184,18 @@ export function CartProvider({ children }) {
 
       setOrders((prev) => [newOrder, ...prev]);
       clearCart();
-      showToast("Order placed successfully! Supply chain inventory updated.", "success");
+      showToast(`Payment of ₹${amountINR.toLocaleString("en-IN")} confirmed via ${paymentMethod}!`, "success");
       return { success: true, order: newOrder };
     } catch (err) {
       console.warn("Backend checkout error, storing order locally:", err);
       const fallbackOrder = {
         id: `ORD-LOCAL-${Date.now().toString().slice(-6)}`,
         date: new Date().toISOString().split("T")[0],
-        total: getCartTotal(),
+        total: cartTotalUSD,
+        total_inr: amountINR,
+        payment_method: paymentMethod,
+        payment_currency: "INR",
+        transaction_id: `TXN-INR-${Date.now().toString().slice(-8)}`,
         items: [...cartItems],
         status: "Confirmed",
         customer: customerInfo.name || "Customer",
@@ -187,7 +203,7 @@ export function CartProvider({ children }) {
       };
       setOrders((prev) => [fallbackOrder, ...prev]);
       clearCart();
-      showToast("Order recorded successfully!", "success");
+      showToast(`Payment of ₹${amountINR.toLocaleString("en-IN")} recorded via ${paymentMethod}!`, "success");
       return { success: true, order: fallbackOrder };
     }
   };

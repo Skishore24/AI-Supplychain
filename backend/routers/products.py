@@ -32,7 +32,8 @@ def create_product(
         category=product.category,
         sku=product.sku,
         price=product.price or 0.0,
-        description=product.description or ""
+        description=product.description or "",
+        image_url=product.image_url or ""
     )
 
     db.add(new_product)
@@ -91,6 +92,8 @@ def update_product(
         product.price = product_data.price
     if product_data.description is not None:
         product.description = product_data.description
+    if product_data.image_url is not None:
+        product.image_url = product_data.image_url
 
     db.commit()
     db.refresh(product)

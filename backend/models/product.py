@@ -39,4 +39,10 @@ class Product(Base):
         String,
         nullable=True,
         default=""
+    )
+
+    image_url = Column(
+        String,
+        nullable=True,
+        default=""
     )

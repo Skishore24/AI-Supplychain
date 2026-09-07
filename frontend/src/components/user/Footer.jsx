@@ -14,7 +14,7 @@ function Footer() {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">Free Fast Delivery</h4>
-                <p className="text-[11px] text-slate-500">On orders over $99</p>
+                <p className="text-[11px] text-slate-500">On orders over ₹999</p>
               </div>
             </div>
 

@@ -37,6 +37,7 @@ An enterprise-grade autonomous supply chain intelligence and e-commerce platform
 ```bash
 cd backend
 
+python -m venv .venv
 # Activate virtual environment (Windows)
 .\venv\Scripts\activate
 
@@ -44,7 +45,7 @@ cd backend
 pip install -r requirements.txt
 
 # Run FastAPI server
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn main:app --reload
 ```
 - API Docs & Swagger UI: `http://127.0.0.1:8000/docs`
 - Health check: `http://127.0.0.1:8000/health`

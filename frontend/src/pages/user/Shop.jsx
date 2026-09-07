@@ -6,83 +6,7 @@ import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import ProductCard from "../../components/user/ProductCard";
 import SortFilterBar from "../../components/user/SortFilterBar";
-import DealsStrip from "../../components/user/DealsStrip";
 import { API_BASE_URL } from "../../context/CartContext";
-
-const DEFAULT_SHOP_PRODUCTS = [
-  {
-    id: 1,
-    name: "boAt Rockerz 650 Pro Wireless Over-Ear Headphones",
-    category: "Headphones",
-    price: 39.99,
-    badge: "TOP SELLER",
-    image_url: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "BOAT-ROC-650",
-  },
-  {
-    id: 2,
-    name: "boAt Nirvana Ion with 120 Hours Playback & Dual EQ",
-    category: "Earbuds",
-    price: 24.99,
-    badge: "HOT DEAL",
-    image_url: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "BOAT-NIR-ION",
-  },
-  {
-    id: 3,
-    name: "boAt Nirvana Ion 32dB Active Noise Cancellation ANC",
-    category: "Earbuds",
-    price: 26.50,
-    badge: "LOWEST PRICE",
-    image_url: "https://images.unsplash.com/photo-1572536147248-ac59a8abfa4b?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "BOAT-NIR-32ANC",
-  },
-  {
-    id: 4,
-    name: "TECHIO AirBeats Wireless Magnetic Bluetooth Neckband",
-    category: "Neckbands",
-    price: 6.00,
-    badge: "SUPER DEAL",
-    image_url: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "TECH-AIR-500",
-  },
-  {
-    id: 5,
-    name: "Sony WH-1000XM4 Industry Leading Noise Canceling",
-    category: "Headphones",
-    price: 269.99,
-    badge: "PREMIUM",
-    image_url: "https://images.unsplash.com/photo-1484704849700-f032a568e944?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "SNY-WH1000XM4",
-  },
-  {
-    id: 6,
-    name: "Apple AirPods Pro (2nd Gen) with MagSafe Case USB-C",
-    category: "Earbuds",
-    price: 249.00,
-    badge: "OFFICIAL",
-    image_url: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "APL-AIR-PRO2",
-  },
-  {
-    id: 7,
-    name: "Bose QuietComfort 45 Bluetooth Wireless Headphones",
-    category: "Headphones",
-    price: 279.00,
-    badge: "BESTSELLER",
-    image_url: "https://images.unsplash.com/photo-1583394838336-acd977736f90?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "BOS-QC-45",
-  },
-  {
-    id: 8,
-    name: "JBL Tune 760NC Lightweight Foldable Wireless Headphones",
-    category: "Headphones",
-    price: 79.99,
-    badge: "POPULAR",
-    image_url: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?auto=format&fm=webp&fit=crop&w=600&q=80",
-    sku: "JBL-TUNE-760",
-  },
-];
 
 function Shop() {
   const [searchParams] = useSearchParams();
@@ -100,16 +24,12 @@ function Shop() {
     fetch(`${API_BASE_URL}/products/`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
-        } else {
-          setProducts(DEFAULT_SHOP_PRODUCTS);
-        }
+        setProducts(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Error loading products:", err);
-        setProducts(DEFAULT_SHOP_PRODUCTS);
+        setProducts([]);
         setLoading(false);
       });
   };
@@ -125,8 +45,7 @@ function Shop() {
     }
   }, [searchParams]);
 
-  const productList = Array.isArray(products) && products.length > 0 ? products : DEFAULT_SHOP_PRODUCTS;
-  const categories = Array.from(new Set(productList.map((p) => p.category).filter(Boolean)));
+  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
 
   const activeFilterCount = (selectedCategory !== "ALL" ? 1 : 0) + (minRating > 0 ? 1 : 0);
 
@@ -137,7 +56,7 @@ function Shop() {
     setSortBy("relevance");
   };
 
-  const filteredProducts = productList
+  const filteredProducts = products
     .filter((product) => {
       const name = (product.name || "").toLowerCase();
       const sku = (product.sku || "").toLowerCase();
@@ -219,7 +138,7 @@ function Shop() {
               </p>
               <button
                 onClick={handleResetFilters}
-                className="mt-4 rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
+                className="btn-press mt-4 rounded-xl bg-slate-950 px-5 py-2 text-xs font-bold text-white hover:bg-amber-600 shadow-sm transition-colors"
               >
                 Reset All Filters
               </button>
@@ -231,15 +150,6 @@ function Shop() {
               ))}
             </div>
           )}
-        </div>
-
-        {/* Promotional Deals Strip Banner */}
-        <div className="mt-8">
-          <DealsStrip
-            title="Top Sale Deals"
-            subtitle="Shop at unbeatable prices & grab limited-time coupons"
-            to="/shop"
-          />
         </div>
       </main>
 

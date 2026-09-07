@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { CartProvider } from "./context/CartContext";
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import { useEffect, useRef } from "react";
 
 // Customer Pages
@@ -12,6 +14,7 @@ import Profile from "./pages/user/Profile";
 import Login from "./pages/user/Login";
 
 // Admin Supply Chain Pages
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProducts from "./pages/admin/AdminProducts";
 import AdminSuppliers from "./pages/admin/AdminSuppliers";
@@ -53,13 +56,58 @@ function AppRoutes() {
         <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Admin Supply Chain Hub Routes */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/products" element={<AdminProducts />} />
-        <Route path="/admin/suppliers" element={<AdminSuppliers />} />
-        <Route path="/admin/inventory" element={<AdminInventory />} />
-        <Route path="/admin/sales" element={<AdminSales />} />
-        <Route path="/admin/ai-agents" element={<AdminAIAgents />} />
+        {/* Admin Gateway Login (Public Entry to Admin Domain) */}
+        <Route path="/admin/login" element={<AdminLogin />} />
+
+        {/* Protected Admin Supply Chain Hub Routes (Requires Verified Admin Session) */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminDashboard />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <AdminProtectedRoute>
+              <AdminProducts />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/suppliers"
+          element={
+            <AdminProtectedRoute>
+              <AdminSuppliers />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/inventory"
+          element={
+            <AdminProtectedRoute>
+              <AdminInventory />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/sales"
+          element={
+            <AdminProtectedRoute>
+              <AdminSales />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/ai-agents"
+          element={
+            <AdminProtectedRoute>
+              <AdminAIAgents />
+            </AdminProtectedRoute>
+          }
+        />
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
@@ -70,11 +118,13 @@ function AppRoutes() {
 
 function App() {
   return (
-    <CartProvider>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </CartProvider>
+    <AdminAuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </CartProvider>
+    </AdminAuthProvider>
   );
 }
 

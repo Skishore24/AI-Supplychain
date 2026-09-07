@@ -97,16 +97,33 @@ def checkout_cart(
 
     db.commit()
 
+    total_inr = round(order.amount_inr if order.amount_inr is not None else (total_amount * 83.0), 2)
+    method = (order.payment_method or "UPI").upper()
+    
+    if "UPI" in method:
+        txn_id = f"UPI/UTR/{int(date.today().strftime('%Y%m%d'))}/{abs(hash(str(total_amount))) % 900000 + 100000}"
+    elif "CARD" in method or "RUPAY" in method:
+        txn_id = f"RUPAY-TXN-{int(date.today().strftime('%Y%m%d'))}-{abs(hash(str(total_amount))) % 900000 + 100000}"
+    elif "NET" in method or "BANK" in method:
+        txn_id = f"NB-REF-{int(date.today().strftime('%Y%m%d'))}-{abs(hash(str(total_amount))) % 900000 + 100000}"
+    else:
+        txn_id = f"COD-IN-{int(date.today().strftime('%Y%m%d'))}-{abs(hash(str(total_amount))) % 90000 + 10000}"
+
     return {
         "status": "success",
         "order_id": f"ORD-{int(date.today().strftime('%Y%m%d'))}-{len(order_items_summary)}",
         "customer_name": order.customer_name,
         "shipping_address": order.shipping_address,
         "total_amount": round(total_amount, 2),
+        "total_inr": total_inr,
+        "payment_method": order.payment_method or "UPI",
+        "payment_currency": order.payment_currency or "INR",
+        "transaction_id": txn_id,
         "items": order_items_summary,
         "date": str(date.today()),
-        "message": "Order placed successfully and supply chain inventory updated."
+        "message": "Order placed successfully in Indian Rupees (₹) and supply chain inventory updated."
     }
+
 
 
 @router.get("/", response_model=list[SaleResponse])

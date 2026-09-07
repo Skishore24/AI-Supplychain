@@ -18,6 +18,25 @@ from routers.sales import router as sales_router
 # Ensure tables exist
 Base.metadata.create_all(bind=engine)
 
+# Ensure image_url column exists in products table
+try:
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE products ADD COLUMN IF NOT EXISTS image_url VARCHAR DEFAULT '';"))
+        conn.commit()
+except Exception as e:
+    # SQLite or other engine fallback
+    try:
+        from sqlalchemy import inspect
+        inspector = inspect(engine)
+        cols = [c["name"] for c in inspector.get_columns("products")]
+        if "image_url" not in cols:
+            with engine.connect() as conn:
+                conn.execute(text("ALTER TABLE products ADD COLUMN image_url VARCHAR DEFAULT '';"))
+                conn.commit()
+    except Exception as inner_e:
+        print(f"Column migration check notice: {inner_e}")
+
 app = FastAPI(
     title="Multi-Agent Supply Chain AI",
     description="AI-powered supply chain management, inventory tracking, and decision support system",
@@ -160,4 +179,10 @@ def seed_database(db: Session = Depends(get_db)):
         "suppliers_count": db.query(Supplier).count(),
         "inventory_count": db.query(Inventory).count(),
         "sales_count": db.query(Sale).count()
-    }
+    }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+
