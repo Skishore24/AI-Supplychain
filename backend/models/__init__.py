@@ -9,7 +9,19 @@ from models.supplier_product import SupplierProduct
 from models.order import Order, OrderItem
 from models.sales import Sale
 from models.purchase_order import PurchaseOrder, PurchaseOrderItem
-from models.ai import AIRecommendation, InventoryAlert, SupplierEvaluation, DemandForecast
+from models.ai import (
+    AIRecommendation,
+    InventoryAlert,
+    SupplierEvaluation,
+    DemandForecast,
+    KnowledgeDocument,
+    DocumentChunk,
+    AIJob,
+    AIConversation,
+    AIMessage,
+    AIAuditLog,
+    ModelRegistry
+)
 from models.system import Notification, AuditLog
 
 __all__ = [
@@ -30,6 +42,13 @@ __all__ = [
     "InventoryAlert",
     "SupplierEvaluation",
     "DemandForecast",
+    "KnowledgeDocument",
+    "DocumentChunk",
+    "AIJob",
+    "AIConversation",
+    "AIMessage",
+    "AIAuditLog",
+    "ModelRegistry",
     "Notification",
     "AuditLog"
 ]

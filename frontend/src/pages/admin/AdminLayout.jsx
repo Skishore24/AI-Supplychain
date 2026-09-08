@@ -23,7 +23,9 @@ import {
   ChevronRight,
   ShieldCheck,
   CheckCircle2,
-  Cpu
+  Cpu,
+  Database,
+  Sparkles
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../hooks/useAnalytics";
@@ -71,9 +73,12 @@ function AdminLayout({ children, title, subtitle, onRefresh, refreshing }) {
     {
       group: "INTELLIGENCE",
       items: [
-        { path: "/admin/ai-agents", label: "AI Control Center", icon: Bot },
-        { path: "/admin/demand-forecasting", label: "Demand Forecasting", icon: TrendingUp },
-        { path: "/admin/alerts", label: "Risk & Alerts", icon: AlertTriangle },
+        { path: "/admin/ai", label: "AI Control Center", icon: Bot },
+        { path: "/admin/recommendations", label: "AI Recommendations", icon: Sparkles },
+        { path: "/admin/knowledge", label: "Knowledge Base (RAG)", icon: Database },
+        { path: "/admin/forecasting", label: "Demand Forecasting", icon: TrendingUp },
+        { path: "/admin/risk", label: "Risk & Anomalies", icon: AlertTriangle },
+        { path: "/admin/ai/settings", label: "Ollama Configuration", icon: Cpu },
       ],
     },
     {

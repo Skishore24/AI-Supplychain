@@ -30,6 +30,12 @@ import AdminUsers from "./pages/admin/AdminUsers";
 import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminAuditLogs from "./pages/admin/AdminAuditLogs";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminAICenter from "./pages/admin/AdminAICenter";
+import AdminAISettings from "./pages/admin/AdminAISettings";
+import AdminKnowledge from "./pages/admin/AdminKnowledge";
+import AdminForecasting from "./pages/admin/AdminForecasting";
+import AdminRisk from "./pages/admin/AdminRisk";
+import AdminRecommendations from "./pages/admin/AdminRecommendations";
 
 // Smooth page transition wrapper
 function PageTransition({ children }) {
@@ -125,10 +131,58 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/admin/ai"
+          element={
+            <AdminProtectedRoute>
+              <AdminAICenter />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/ai/settings"
+          element={
+            <AdminProtectedRoute>
+              <AdminAISettings />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/knowledge"
+          element={
+            <AdminProtectedRoute>
+              <AdminKnowledge />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/recommendations"
+          element={
+            <AdminProtectedRoute>
+              <AdminRecommendations />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/forecasting"
+          element={
+            <AdminProtectedRoute>
+              <AdminForecasting />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/risk"
+          element={
+            <AdminProtectedRoute>
+              <AdminRisk />
+            </AdminProtectedRoute>
+          }
+        />
+        <Route
           path="/admin/ai-agents"
           element={
             <AdminProtectedRoute>
-              <AdminAIAgents />
+              <AdminAICenter />
             </AdminProtectedRoute>
           }
         />
@@ -136,7 +190,7 @@ function AppRoutes() {
           path="/admin/demand-forecasting"
           element={
             <AdminProtectedRoute>
-              <AdminDemandForecasting />
+              <AdminForecasting />
             </AdminProtectedRoute>
           }
         />
@@ -144,7 +198,7 @@ function AppRoutes() {
           path="/admin/alerts"
           element={
             <AdminProtectedRoute>
-              <AdminRiskAlerts />
+              <AdminRisk />
             </AdminProtectedRoute>
           }
         />

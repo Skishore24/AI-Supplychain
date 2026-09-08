@@ -37,6 +37,21 @@ class Settings(BaseSettings):
     # Fallback to local sqlite if postgres fails
     SQLITE_FALLBACK_URL: str = f"sqlite:///{BASE_DIR}/supply_chain.db"
 
+    # Ollama & Local AI Configuration
+    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+    OLLAMA_SMALL_MODEL: str = os.getenv("OLLAMA_SMALL_MODEL", "llama3.2:3b")
+    OLLAMA_REASONING_MODEL: str = os.getenv("OLLAMA_REASONING_MODEL", "llama3.1:8b")
+    OLLAMA_VISION_MODEL: str = os.getenv("OLLAMA_VISION_MODEL", "llama3.2-vision")
+    OLLAMA_EMBEDDING_MODEL: str = os.getenv("OLLAMA_EMBEDDING_MODEL", "nomic-embed-text")
+
+    # Document & RAG Pipeline Configuration
+    MAX_DOCUMENT_SIZE: int = int(os.getenv("MAX_DOCUMENT_SIZE", 20 * 1024 * 1024))  # 20 MB
+    RAG_TOP_K: int = int(os.getenv("RAG_TOP_K", "20"))
+    RAG_RERANK_K: int = int(os.getenv("RAG_RERANK_K", "5"))
+    AI_TIMEOUT_SECONDS: int = int(os.getenv("AI_TIMEOUT_SECONDS", "60"))
+    DOCUMENTS_DIR: str = str(BASE_DIR / "uploaded_documents")
+
     class Config:
         case_sensitive = True
         env_file = str(BASE_DIR / ".env")

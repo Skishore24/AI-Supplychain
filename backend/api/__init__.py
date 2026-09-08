@@ -11,6 +11,8 @@ from api.routes.orders import router as orders_router
 from api.routes.sales import router as sales_router
 from api.routes.purchase_orders import router as purchase_orders_router
 from api.routes.ai import router as ai_router
+from api.routes.knowledge import router as knowledge_router
+from api.routes.forecast import router as forecast_router
 from api.routes.alerts import router as alerts_router
 from api.routes.analytics import router as analytics_router
 from api.routes.notifications import router as notifications_router
@@ -30,6 +32,8 @@ api_router.include_router(orders_router)
 api_router.include_router(sales_router)
 api_router.include_router(purchase_orders_router)
 api_router.include_router(ai_router)
+api_router.include_router(knowledge_router)
+api_router.include_router(forecast_router)
 api_router.include_router(alerts_router)
 api_router.include_router(analytics_router)
 api_router.include_router(notifications_router)

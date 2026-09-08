@@ -1,191 +1,126 @@
-import math
-from datetime import date, timedelta
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from pydantic import BaseModel
 
 from models.product import Product
 from models.inventory import Inventory
 from models.sales import Sale
+from agents.base_agent import BaseAgent
+from ml.forecasting.predict import generate_demand_prediction
+from ai.llm.provider import get_llm_provider
+from ai.llm.prompts import DEMAND_FORECAST_PROMPT, SYSTEM_PROMPT_SUPPLY_CHAIN_BASE
 
+class DemandAgentInput(BaseModel):
+    product_id: Optional[int] = None
+    horizons: List[int] = [7, 30, 90]
+
+class DemandAgent(BaseAgent):
+    name = "demand_agent"
+    description = "Executes chronological ML time-series forecasting (baseline vs Ridge/ML) and generates grounded explanations."
+    input_schema = DemandAgentInput
+
+    def run(self, db: Session, user: Optional[Any] = None, **kwargs) -> Dict[str, Any]:
+        target_prod_id = kwargs.get("product_id")
+        horizons = kwargs.get("horizons", [7, 30, 90])
+
+        if target_prod_id:
+            products = db.query(Product).filter(Product.id == target_prod_id).all()
+        else:
+            products = db.query(Product).filter(Product.status == "active").all()
+
+        llm = get_llm_provider()
+        forecasts = []
+        category_demand = {}
+
+        for prod in products:
+            inv = db.query(Inventory).filter(Inventory.product_id == prod.id).first()
+            current_stock = inv.current_stock if inv else 0
+            available_stock = max(0, current_stock - (inv.reserved_stock if inv else 0))
+
+            # Execute real ML forecasting pipeline
+            pred_data = generate_demand_prediction(db, prod.id, horizons=horizons)
+            h_map = {h_data["horizon_days"]: h_data for h_data in pred_data["horizons"]}
+
+            p7 = h_map.get(7, {}).get("predicted_quantity", 7.0)
+            p30 = h_map.get(30, {}).get("predicted_quantity", 30.0)
+            p90 = h_map.get(90, {}).get("predicted_quantity", 90.0)
+            conf_lower = h_map.get(30, {}).get("lower_bound", p30 * 0.8)
+            conf_upper = h_map.get(30, {}).get("upper_bound", p30 * 1.2)
+            confidence = h_map.get(30, {}).get("confidence", 0.85)
+
+            velocity = pred_data["daily_velocity"]
+            days_stock_left = round(available_stock / max(0.1, velocity), 1)
+            risk = "HIGH" if days_stock_left < 7 else ("MEDIUM" if days_stock_left < 20 else "LOW")
+
+            explanation = (
+                f"30-day projected demand is {p30} units (estimated between {conf_lower} and {conf_upper} units) "
+                f"at a daily velocity of {velocity} units/day. Current stock of {available_stock} provides ~{days_stock_left} days of coverage."
+            )
+
+            # If single product query, enrich with LLM explanation
+            if target_prod_id:
+                prompt = DEMAND_FORECAST_PROMPT.format(
+                    product_name=prod.name,
+                    sku=prod.sku,
+                    velocity=velocity,
+                    days_stock_left=days_stock_left,
+                    p7=p7,
+                    p30=p30,
+                    conf_lower=conf_lower,
+                    conf_upper=conf_upper,
+                    p90=p90,
+                    trend=pred_data["trend_direction"],
+                    growth_pct=pred_data["growth_rate_pct"],
+                    model_name=pred_data["model_used"],
+                    model_version=pred_data["model_version"]
+                )
+                llm_exp = llm.generate(prompt=prompt, system=SYSTEM_PROMPT_SUPPLY_CHAIN_BASE)
+                if llm_exp and "[AI Note:" not in llm_exp:
+                    explanation = llm_exp
+
+            item_result = {
+                "product_id": prod.id,
+                "product_name": prod.name,
+                "sku": prod.sku,
+                "category": prod.category,
+                "current_stock": current_stock,
+                "available_stock": available_stock,
+                "daily_velocity": velocity,
+                "projected_7d": p7,
+                "projected_30d": p30,
+                "projected_90d": p90,
+                "confidence_lower": conf_lower,
+                "confidence_upper": conf_upper,
+                "confidence": confidence,
+                "trend_direction": pred_data["trend_direction"],
+                "growth_rate": pred_data["growth_rate_pct"],
+                "days_of_stock_left": days_stock_left,
+                "stockout_risk": risk,
+                "model_name": pred_data["model_used"],
+                "model_version": pred_data["model_version"],
+                "explanation": explanation
+            }
+            forecasts.append(item_result)
+
+            cat = prod.category
+            if cat not in category_demand:
+                category_demand[cat] = {"category": cat, "monthly_projected_units": 0, "daily_velocity": 0.0}
+            category_demand[cat]["monthly_projected_units"] += p30
+            category_demand[cat]["daily_velocity"] += velocity
+
+        return {
+            "forecast_horizon_days": 30,
+            "items": forecasts,
+            "forecasts": forecasts,  # for backwards compatibility
+            "category_run_rates": list(category_demand.values())
+        }
+
+# Backwards compatible alias
 def generate_demand_forecast(db: Session) -> Dict[str, Any]:
-    """
-    Agent 3: Demand Velocity & Run-Rate Forecaster
-    Generates 7-day, 30-day, and 90-day demand horizons with confidence intervals.
-    """
-    products = db.query(Product).filter(Product.status == "active").all()
-    forecasts = []
-    
-    today = date.today()
-    thirty_days_ago = today - timedelta(days=30)
-    seven_days_ago = today - timedelta(days=7)
-
-    category_demand = {}
-
-    for prod in products:
-        inv = db.query(Inventory).filter(Inventory.product_id == prod.id).first()
-        current_stock = inv.current_stock if inv else 0
-        available_stock = max(0, current_stock - (inv.reserved_stock if inv else 0))
-
-        # Recent sales
-        sales_7d = db.query(func.sum(Sale.quantity_sold)).filter(
-            Sale.product_id == prod.id,
-            Sale.sale_date >= seven_days_ago
-        ).scalar() or 0
-
-        sales_30d = db.query(func.sum(Sale.quantity_sold)).filter(
-            Sale.product_id == prod.id,
-            Sale.sale_date >= thirty_days_ago
-        ).scalar() or 0
-
-        daily_rate_7d = sales_7d / 7.0
-        daily_rate_30d = sales_30d / 30.0
-
-        # Weighted velocity: recent 7 days weighted 60%, 30 days weighted 40%
-        base_velocity = max(0.5, round((daily_rate_7d * 0.6) + (daily_rate_30d * 0.4), 2))
-
-        # Trend detection
-        if daily_rate_7d > daily_rate_30d * 1.15:
-            trend = "increasing"
-            growth_pct = round(((daily_rate_7d - daily_rate_30d) / max(0.1, daily_rate_30d)) * 100, 1)
-            multiplier = 1.10
-        elif daily_rate_7d < daily_rate_30d * 0.85:
-            trend = "decreasing"
-            growth_pct = round(((daily_rate_7d - daily_rate_30d) / max(0.1, daily_rate_30d)) * 100, 1)
-            multiplier = 0.92
-        else:
-            trend = "stable"
-            growth_pct = 0.0
-            multiplier = 1.0
-
-        p7 = round(base_velocity * 7 * multiplier, 1)
-        p30 = round(base_velocity * 30 * multiplier, 1)
-        p90 = round(base_velocity * 90 * multiplier, 1)
-
-        # Standard error / confidence bounds (± 15% - 25%)
-        conf_margin_30 = p30 * 0.18
-        conf_lower = max(0.0, round(p30 - conf_margin_30, 1))
-        conf_upper = round(p30 + conf_margin_30, 1)
-
-        days_stock_left = round(available_stock / base_velocity, 1)
-
-        if days_stock_left < 7:
-            risk = "HIGH"
-        elif days_stock_left < 20:
-            risk = "MEDIUM"
-        else:
-            risk = "LOW"
-
-        forecasts.append({
-            "product_id": prod.id,
-            "product_name": prod.name,
-            "sku": prod.sku,
-            "category": prod.category,
-            "current_stock": current_stock,
-            "available_stock": available_stock,
-            "daily_velocity": base_velocity,
-            "projected_7d": p7,
-            "projected_30d": p30,
-            "projected_90d": p90,
-            "confidence_lower": conf_lower,
-            "confidence_upper": conf_upper,
-            "trend_direction": trend,
-            "growth_rate": growth_pct,
-            "days_of_stock_left": days_stock_left,
-            "stockout_risk": risk
-        })
-
-        # Category aggregate
-        cat = prod.category
-        if cat not in category_demand:
-            category_demand[cat] = {"category": cat, "monthly_projected_units": 0, "daily_velocity": 0.0}
-        category_demand[cat]["monthly_projected_units"] += p30
-        category_demand[cat]["daily_velocity"] += base_velocity
-
-    return {
-        "forecast_horizon_days": 30,
-        "items": forecasts,
-        "category_run_rates": list(category_demand.values())
-    }
+    agent = DemandAgent()
+    return agent.run(db)
 
 def get_supply_chain_risk_overview(db: Session) -> Dict[str, Any]:
-    """
-    Supply Chain Risk Engine:
-    Categorizes risks across Stockout, Supplier, Demand, Delivery, and Inventory Anomaly.
-    """
-    from agents.inventory_agent import calculate_inventory_intelligence
-    inv_intel = calculate_inventory_intelligence(db)
-    demand_intel = generate_demand_forecast(db)
-
-    risks = []
-    
-    # 1. Stockout Risks
-    for alert in inv_intel.get("alerts", []):
-        if alert["severity"] == "CRITICAL":
-            risks.append({
-                "id": f"RISK-STOCKOUT-{alert['product_id']}",
-                "category": "Stockout",
-                "severity": "CRITICAL",
-                "probability": 0.95,
-                "impact": 0.90,
-                "risk_score": 85.5,
-                "title": f"Imminent Stockout for {alert['product_name']}",
-                "reason": alert["reason"],
-                "affected_entity": f"{alert['sku']} ({alert['product_name']})",
-                "recommended_action": f"Approve PO for {alert['suggested_reorder_units']} units via {alert['recommended_supplier']}."
-            })
-        elif alert["severity"] == "WARNING":
-            risks.append({
-                "id": f"RISK-STOCKOUT-{alert['product_id']}",
-                "category": "Stockout",
-                "severity": "HIGH",
-                "probability": 0.75,
-                "impact": 0.70,
-                "risk_score": 52.5,
-                "title": f"Replenishment Warning: {alert['product_name']}",
-                "reason": alert["reason"],
-                "affected_entity": f"{alert['sku']}",
-                "recommended_action": f"Schedule reorder of {alert['suggested_reorder_units']} units."
-            })
-
-    # 2. Demand Surge Risks
-    for item in demand_intel.get("items", []):
-        if item["growth_rate"] > 20.0 and item["days_of_stock_left"] < 15:
-            risks.append({
-                "id": f"RISK-DEMAND-{item['product_id']}",
-                "category": "Demand",
-                "severity": "HIGH",
-                "probability": 0.80,
-                "impact": 0.75,
-                "risk_score": 60.0,
-                "title": f"Demand Surge Detected (+{item['growth_rate']}%)",
-                "reason": f"Sales run-rate surged by {item['growth_rate']}% over the past 7 days while stock coverage is only {item['days_of_stock_left']} days.",
-                "affected_entity": f"{item['sku']} ({item['product_name']})",
-                "recommended_action": "Increase safety stock threshold and place advance replenishment."
-            })
-
-    # Overall risk score calculation
-    if not risks:
-        overall_score = 12.0
-        risk_level = "OPTIMAL"
-    else:
-        crit_count = sum(1 for r in risks if r["severity"] == "CRITICAL")
-        high_count = sum(1 for r in risks if r["severity"] == "HIGH")
-        overall_score = min(98.0, max(15.0, (crit_count * 25.0) + (high_count * 12.0)))
-        
-        if overall_score >= 70:
-            risk_level = "CRITICAL"
-        elif overall_score >= 45:
-            risk_level = "ELEVATED"
-        elif overall_score >= 25:
-            risk_level = "MODERATE"
-        else:
-            risk_level = "OPTIMAL"
-
-    return {
-        "overall_risk_score": round(overall_score, 1),
-        "risk_level": risk_level,
-        "critical_alerts_count": sum(1 for r in risks if r["severity"] == "CRITICAL"),
-        "warning_alerts_count": sum(1 for r in risks if r["severity"] in ("HIGH", "MEDIUM")),
-        "risks": risks
-    }
+    from agents.risk_agent import RiskAgent
+    agent = RiskAgent()
+    return agent.run(db)
