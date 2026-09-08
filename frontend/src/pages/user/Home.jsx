@@ -32,50 +32,45 @@ import categoryBanner from "../../assets/category_banner.jpg";
 
 function Home() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All");
 
   useEffect(() => {
     setLoading(true);
-    api.products.list({ limit: 50 })
-      .then((data) => {
-        setProducts(Array.isArray(data) ? data : data.items || []);
+    Promise.all([
+      api.products.list({ limit: 50 }),
+      api.categories.list()
+    ])
+      .then(([prodData, catData]) => {
+        setProducts(Array.isArray(prodData) ? prodData : prodData.items || []);
+        setCategories(Array.isArray(catData) ? catData : catData.items || []);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error loading products:", err);
-        setProducts([]);
+        console.error("Error loading products/categories from DB:", err);
         setLoading(false);
       });
   }, []);
 
-  // Category list with clean SVG badges (matching reference image circular layout)
-  const popularCategories = [
-    { name: "Electronics", icon: Cpu, color: "bg-blue-50 text-blue-600 border-blue-200" },
-    { name: "Microcontrollers", icon: Activity, color: "bg-purple-50 text-purple-600 border-purple-200" },
-    { name: "Power & Battery", icon: BatteryCharging, color: "bg-amber-50 text-amber-600 border-amber-200" },
-    { name: "Displays & OLED", icon: Tv, color: "bg-rose-50 text-rose-600 border-rose-200" },
-    { name: "Sensors & IoT", icon: Radio, color: "bg-emerald-50 text-emerald-600 border-emerald-200" },
-    { name: "Industrial Motors", icon: Zap, color: "bg-orange-50 text-orange-600 border-orange-200" },
-    { name: "Robotics Kits", icon: Bot, color: "bg-indigo-50 text-indigo-600 border-indigo-200" },
-    { name: "Components", icon: Layers, color: "bg-teal-50 text-teal-600 border-teal-200" },
-  ];
-
-  // Official Brand Stores (matching reference image)
-  const officialBrands = [
-    { name: "NVIDIA", tier: "Delivery within 24 hours", logo: "NV", bg: "bg-emerald-950 text-emerald-400" },
-    { name: "STMicroelectronics", tier: "Delivery within 24 hours", logo: "STM", bg: "bg-blue-950 text-blue-400" },
-    { name: "Texas Instruments", tier: "Delivery within 24 hours", logo: "TI", bg: "bg-red-950 text-red-400" },
-    { name: "Intel", tier: "Delivery within 24 hours", logo: "IN", bg: "bg-sky-950 text-sky-400" },
-    { name: "Raspberry Pi", tier: "Delivery within 24 hours", logo: "RPi", bg: "bg-rose-950 text-rose-400" },
-    { name: "Bosch Sensortec", tier: "Delivery within 24 hours", logo: "B", bg: "bg-slate-900 text-amber-400" },
-    { name: "Samsung Semi", tier: "Delivery within 24 hours", logo: "SAM", bg: "bg-indigo-950 text-indigo-400" },
-    { name: "Arduino Official", tier: "Delivery within 24 hours", logo: "ARD", bg: "bg-teal-950 text-teal-400" },
-  ];
+  // Dynamically derived from products in PostgreSQL
+  const officialBrands = Array.from(
+    new Set(products.map((p) => p.brand).filter(Boolean))
+  ).map((brandName) => ({
+    name: brandName,
+    tier: "Verified Partner",
+    logo: brandName.slice(0, 3).toUpperCase(),
+    bg: "bg-slate-900 text-amber-400"
+  }));
 
   const todayDeals = products.slice(0, 5);
-  const computeProducts = products.filter((p) => p.category === "Microcontroller" || p.category === "Electronics").slice(0, 4);
-  const powerProducts = products.filter((p) => p.category === "Power" || p.category === "Actuators").slice(0, 4);
+  const computeProducts = products.filter(
+    (p) =>
+      p.category?.toLowerCase().includes("semiconductor") ||
+      p.category?.toLowerCase().includes("microcontroller") ||
+      p.name?.toLowerCase().includes("microcontroller") ||
+      p.name?.toLowerCase().includes("arm")
+  );
 
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-slate-900 flex flex-col justify-between pb-20 lg:pb-0 font-poppins">
@@ -219,27 +214,28 @@ function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4">
-            {popularCategories.map((cat, i) => {
-              const Icon = cat.icon;
-              return (
-                <Link
-                  key={i}
-                  to={`/shop?category=${encodeURIComponent(cat.name.split(" ")[0])}`}
-                  className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1"
-                >
-                  {/* Circular Avatar Container with soft shadow (exactly matching image) */}
-                  <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full bg-white border border-slate-200/80 shadow-md group-hover:shadow-lg group-hover:border-amber-400 transition-all p-3">
-                    <div className={`flex h-full w-full items-center justify-center rounded-full ${cat.color} transition-transform group-hover:scale-110`}>
-                      <Icon size={22} />
-                    </div>
-                  </div>
-                  <span className="mt-2 text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-amber-700 transition-colors line-clamp-1">
-                    {cat.name}
-                  </span>
-                </Link>
-              );
-            })}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4">
+            {categories.map((cat, i) => (
+              <Link
+                key={cat.id || i}
+                to={`/shop?category=${encodeURIComponent(cat.name)}`}
+                className="group flex flex-col items-center text-center transition-transform hover:-translate-y-1"
+              >
+                {/* Circular Photographic Container with soft shadow and zoom effect */}
+                <div className="relative flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full overflow-hidden bg-slate-100 border-2 border-white shadow-md group-hover:shadow-xl group-hover:border-amber-400 transition-all p-0.5">
+                  <img
+                    src={cat.image_url || "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80"}
+                    alt={cat.name}
+                    className="h-full w-full rounded-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-slate-950/10 group-hover:bg-transparent transition-colors" />
+                </div>
+                <span className="mt-2 text-[11px] sm:text-xs font-bold text-slate-800 group-hover:text-amber-700 transition-colors line-clamp-1">
+                  {cat.name}
+                </span>
+              </Link>
+            ))}
           </div>
         </section>
 
@@ -300,7 +296,7 @@ function Home() {
               </div>
               <div>
                 <Link
-                  to="/shop?category=Sensors"
+                  to={`/shop?category=${encodeURIComponent("Sensors & IoT")}`}
                   className="inline-flex items-center gap-1.5 rounded-full bg-white text-rose-700 px-4 py-1.5 text-xs font-black shadow-xs hover:bg-rose-50 transition"
                 >
                   <span>Shop Sensors</span>
@@ -325,7 +321,7 @@ function Home() {
               </div>
               <div>
                 <Link
-                  to="/shop?category=Microcontroller"
+                  to={`/shop?category=${encodeURIComponent("Semiconductors")}`}
                   className="inline-flex items-center gap-1.5 rounded-full bg-white text-blue-700 px-4 py-1.5 text-xs font-black shadow-xs hover:bg-sky-50 transition"
                 >
                   <span>Explore Boards</span>
@@ -447,7 +443,7 @@ function Home() {
                 <p className="text-xs text-slate-500">Top rated industrial logic boards</p>
               </div>
               <Link
-                to="/shop?category=Microcontroller"
+                to={`/shop?category=${encodeURIComponent("Semiconductors")}`}
                 className="text-xs font-bold text-amber-700 hover:text-amber-800 transition flex items-center gap-1"
               >
                 <span>View All</span>

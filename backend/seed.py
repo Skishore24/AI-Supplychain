@@ -29,7 +29,7 @@ def seed():
     db = SessionLocal()
     print("Starting controlled enterprise database seeding...")
 
-    # 1. Users (Admin, Manager, Customer)
+    # 1. System Administrator
     users_data = [
         {
             "email": "admin@emox.ai",
@@ -38,22 +38,6 @@ def seed():
             "role": "admin",
             "phone": "+1 (555) 019-2831",
             "address": "450 Innovation Blvd, Enterprise Suite 10, Austin TX 78701"
-        },
-        {
-            "email": "manager@emox.ai",
-            "password": "manager123",
-            "full_name": "Sarah Connor",
-            "role": "manager",
-            "phone": "+1 (555) 019-4421",
-            "address": "12 Logistics Way, Dallas TX 75001"
-        },
-        {
-            "email": "customer@emox.ai",
-            "password": "customer123",
-            "full_name": "David Miller",
-            "role": "customer",
-            "phone": "+1 (555) 018-9901",
-            "address": "88 Market St, San Francisco CA 94103"
         }
     ]
 
@@ -70,7 +54,7 @@ def seed():
                 is_active=True
             ))
     db.commit()
-    print("[OK] Users seeded (admin@emox.ai, manager@emox.ai, customer@emox.ai)")
+    print("[OK] System Administrator verified (admin@emox.ai)")
 
     # 2. Warehouses
     warehouses_data = [
@@ -93,23 +77,55 @@ def seed():
 
     # 3. Categories
     categories_data = [
-        {"name": "Energy & Batteries", "slug": "energy-batteries", "description": "High-density lithium cells, BMS modules, and industrial battery packs."},
-        {"name": "Semiconductors", "slug": "semiconductors", "description": "32-bit ARM RISC microcontrollers, FPGA processors, and power management ICs."},
-        {"name": "Displays & Optoelectronics", "slug": "displays-optoelectronics", "description": "High-contrast SPI OLED panels, IPS TFT displays, and camera sensors."},
-        {"name": "Motors & Actuators", "slug": "motors-actuators", "description": "High-torque brushless DC motors, precision servos, and stepper drivers."},
-        {"name": "Thermal & Mechanical", "slug": "thermal-mechanical", "description": "Extruded aluminum heatsinks, cooling fans, and structural brackets."},
-        {"name": "Sensors & IoT", "slug": "sensors-iot", "description": "Industrial temperature, humidity, pressure, and multi-axis IMU sensors."}
+        {
+            "name": "Energy & Batteries",
+            "slug": "energy-batteries",
+            "description": "High-density lithium cells, BMS modules, and industrial battery packs.",
+            "image_url": "https://images.unsplash.com/photo-1619725002198-6a689b72f41d?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+            "name": "Semiconductors",
+            "slug": "semiconductors",
+            "description": "32-bit ARM RISC microcontrollers, FPGA processors, and power management ICs.",
+            "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+            "name": "Displays & Optoelectronics",
+            "slug": "displays-optoelectronics",
+            "description": "High-contrast SPI OLED panels, IPS TFT displays, and camera sensors.",
+            "image_url": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+            "name": "Motors & Actuators",
+            "slug": "motors-actuators",
+            "description": "High-torque brushless DC motors, precision servos, and stepper drivers.",
+            "image_url": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+            "name": "Thermal & Mechanical",
+            "slug": "thermal-mechanical",
+            "description": "Extruded aluminum heatsinks, cooling fans, and structural brackets.",
+            "image_url": "https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=800&auto=format&fit=crop&q=80"
+        },
+        {
+            "name": "Sensors & IoT",
+            "slug": "sensors-iot",
+            "description": "Industrial temperature, humidity, pressure, and multi-axis IMU sensors.",
+            "image_url": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&auto=format&fit=crop&q=80"
+        }
     ]
     cat_map = {}
     for c in categories_data:
         existing = db.query(Category).filter(Category.slug == c["slug"]).first()
         if not existing:
-            cat_obj = Category(name=c["name"], slug=c["slug"], description=c["description"])
+            cat_obj = Category(name=c["name"], slug=c["slug"], description=c["description"], image_url=c["image_url"])
             db.add(cat_obj)
             db.commit()
             db.refresh(cat_obj)
             cat_map[c["name"]] = cat_obj.id
         else:
+            existing.image_url = c["image_url"]
+            db.commit()
             cat_map[c["name"]] = existing.id
     print("[OK] Product Categories seeded")
 
@@ -123,6 +139,7 @@ def seed():
             "price": 45.99,
             "cost_price": 32.00,
             "description": "High-density rechargeable lithium polymer module for IoT gateways and portable robotic systems.",
+            "image_url": "https://images.unsplash.com/photo-1619725002198-6a689b72f41d?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 20,
             "safety_stock": 10,
             "lead_time_days": 4,
@@ -136,6 +153,7 @@ def seed():
             "price": 12.50,
             "cost_price": 8.20,
             "description": "32-bit low-power RISC processor with integrated ADC, hardware FPU, and cryptographic acceleration.",
+            "image_url": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 25,
             "safety_stock": 15,
             "lead_time_days": 3,
@@ -149,6 +167,7 @@ def seed():
             "price": 8.75,
             "cost_price": 5.40,
             "description": "Ultra-sharp 128x64 graphic OLED panel with dual SPI/I2C communication interface.",
+            "image_url": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 15,
             "safety_stock": 10,
             "lead_time_days": 3,
@@ -162,6 +181,7 @@ def seed():
             "price": 38.00,
             "cost_price": 26.50,
             "description": "Industrial high-torque brushless DC motor with integrated Hall-effect sensor feedback.",
+            "image_url": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 12,
             "safety_stock": 8,
             "lead_time_days": 5,
@@ -175,6 +195,7 @@ def seed():
             "price": 3.20,
             "cost_price": 1.75,
             "description": "Anodized aluminum extruded cooling heatsink for high-current power MOSFETs and processors.",
+            "image_url": "https://images.unsplash.com/photo-1581092162384-8987c1d64718?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 30,
             "safety_stock": 20,
             "lead_time_days": 3,
@@ -188,6 +209,7 @@ def seed():
             "price": 6.40,
             "cost_price": 3.80,
             "description": "Factory-calibrated digital temperature and relative humidity sensor with high noise immunity.",
+            "image_url": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&auto=format&fit=crop&q=80",
             "reorder_point": 18,
             "safety_stock": 12,
             "lead_time_days": 4,
@@ -209,6 +231,7 @@ def seed():
                 price=p["price"],
                 cost_price=p["cost_price"],
                 description=p["description"],
+                image_url=p.get("image_url", ""),
                 reorder_point=p["reorder_point"],
                 safety_stock=p["safety_stock"],
                 lead_time_days=p["lead_time_days"],
@@ -223,6 +246,7 @@ def seed():
             existing.reorder_point = p["reorder_point"]
             existing.safety_stock = p["safety_stock"]
             existing.lead_time_days = p["lead_time_days"]
+            existing.image_url = p.get("image_url", "")
             db.commit()
             prod_map[p["sku"]] = existing
 

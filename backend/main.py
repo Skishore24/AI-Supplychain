@@ -9,7 +9,7 @@ from core.config import settings
 from db.session import engine
 import models
 from models import Base
-from api.v1 import api_v1_router
+from api import api_router
 
 # Ensure all database schema tables exist
 Base.metadata.create_all(bind=engine)
@@ -38,7 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Unified Structured Error Handling (Section 29)
+# Unified Structured Error Handling
 @app.exception_handler(StarletteHTTPException)
 async def custom_http_exception_handler(request: Request, exc: StarletteHTTPException):
     return JSONResponse(
@@ -70,27 +70,14 @@ async def generic_exception_handler(request: Request, exc: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "success": False,
-            "message": "An internal server error occurred. The operation has been safely logged.",
+            "message": "An internal server error occurred.",
             "code": "INTERNAL_SERVER_ERROR",
             "details": {}
         }
     )
 
-# Mount Clean REST API v1
-app.include_router(api_v1_router, prefix=settings.API_V1_STR)
-
-# Legacy Routers for Backward Compatibility
-from routers.products import router as legacy_product_router
-from routers.suppliers import router as legacy_supplier_router
-from routers.inventory import router as legacy_inventory_router
-from routers.sales import router as legacy_sales_router
-from routers.recommendations import router as legacy_recommendation_router
-
-app.include_router(legacy_product_router)
-app.include_router(legacy_supplier_router)
-app.include_router(legacy_inventory_router)
-app.include_router(legacy_sales_router)
-app.include_router(legacy_recommendation_router)
+# Mount Clean Centralized REST API Router
+app.include_router(api_router, prefix=settings.API_PREFIX)
 
 @app.get("/")
 def home():
@@ -98,7 +85,7 @@ def home():
         "message": "Enterprise Multi-Agent Supply Chain AI is operational",
         "status": "success",
         "version": settings.VERSION,
-        "api_v1": f"{settings.API_V1_STR}",
+        "api": settings.API_PREFIX,
         "docs": "/docs"
     }
 

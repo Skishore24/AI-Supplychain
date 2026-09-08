@@ -98,7 +98,7 @@ def legacy_checkout(order: BatchOrderCreate, db: Session = Depends(get_db)):
     """
     Backward-compatible checkout endpoint delegating to atomic Order fulfillment.
     """
-    from api.v1.orders import create_customer_order
+    from api.routes.orders import create_customer_order
     from schemas.order import OrderCreate, OrderItemCreate
 
     order_payload = OrderCreate(

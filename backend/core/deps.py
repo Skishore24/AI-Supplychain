@@ -9,7 +9,7 @@ from db.session import get_db
 from models.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_V1_STR}/auth/login",
+    tokenUrl=f"{settings.API_PREFIX}/auth/login",
     auto_error=False
 )
 

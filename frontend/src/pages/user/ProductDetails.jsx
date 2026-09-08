@@ -23,7 +23,8 @@ import Navbar from "../../components/user/Navbar";
 import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import ProductCard, { getProductImage, SAMPLE_IMAGE } from "../../components/user/ProductCard";
-import { useCart, API_BASE_URL } from "../../context/CartContext";
+import { useCart } from "../../context/CartContext";
+import api from "../../services/api";
 
 function ProductDetails() {
   const { id } = useParams();
@@ -49,30 +50,22 @@ function ProductDetails() {
     setLoading(true);
     setNotFound(false);
 
-    fetch(`${API_BASE_URL}/products/${id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Product not found");
-        return res.json();
-      })
+    api.products.get(id)
       .then((data) => {
         setProduct(data);
         setLoading(false);
 
-        // Fetch live inventory for this product
-        fetch(`${API_BASE_URL}/inventory/${data.id}`)
-          .then((res) => (res.ok ? res.json() : null))
+        // Fetch live inventory for this product from DB
+        api.inventory.get(data.id)
           .then((invData) => setInventoryInfo(invData))
           .catch((err) => console.warn("Inventory fetch error:", err));
 
-        // Fetch related recommendations
-        fetch(`${API_BASE_URL}/products/`)
-          .then((res) => (res.ok ? res.json() : []))
+        // Fetch related recommendations from DB
+        api.products.list()
           .then((allProducts) => {
-            if (Array.isArray(allProducts)) {
-              // Exclude current product and prefer same category
-              const others = allProducts.filter((p) => p.id !== data.id);
-              setRelatedProducts(others.slice(0, 4));
-            }
+            const list = Array.isArray(allProducts) ? allProducts : allProducts.items || [];
+            const others = list.filter((p) => p.id !== data.id);
+            setRelatedProducts(others.slice(0, 4));
           })
           .catch((err) => console.warn("Related products fetch error:", err));
       })

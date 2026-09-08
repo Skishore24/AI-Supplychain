@@ -75,3 +75,31 @@ def toggle_user_status(
     )
 
     return target_user
+
+@router.delete("/{user_id}", response_model=StandardResponse)
+def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin)
+):
+    target_user = db.query(User).filter(User.id == user_id).first()
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    if target_user.id == admin.id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own administrator account.")
+
+    user_email = target_user.email
+    db.delete(target_user)
+    db.commit()
+
+    log_audit_event(
+        db=db,
+        user_email=admin.email,
+        action="USER_DELETED",
+        entity="User",
+        entity_id=user_id,
+        previous_state={"email": user_email}
+    )
+
+    return StandardResponse(message=f"User {user_email} has been permanently deleted.")

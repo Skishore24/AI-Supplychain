@@ -4,21 +4,21 @@
  */
 
 const BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
-const API_V1 = `${BASE_URL}/api/v1`;
+const API_BASE = `${BASE_URL}/api`;
 
 function getAuthHeaders() {
   const token = localStorage.getItem("emox_auth_token") || localStorage.getItem("emox_admin_token");
   const headers = {
     "Content-Type": "application/json",
   };
-  if (token && !token.startsWith("emox_sec_token_")) {
+  if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
   return headers;
 }
 
 async function request(endpoint, options = {}) {
-  const url = endpoint.startsWith("http") ? endpoint : `${API_V1}${endpoint}`;
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
   const config = {
     ...options,
     headers: {
@@ -77,6 +77,8 @@ export const api = {
       request(`/users/${userId}/role?new_role=${newRole}`, { method: "PUT" }),
     toggleStatus: (userId) =>
       request(`/users/${userId}/toggle-status`, { method: "PUT" }),
+    delete: (userId) =>
+      request(`/users/${userId}`, { method: "DELETE" }),
   },
 
   // Products

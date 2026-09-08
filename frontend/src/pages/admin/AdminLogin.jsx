@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
-  ShieldCheck,
+  Mail,
   Lock,
   Eye,
   EyeOff,
-  KeyRound,
-  AlertTriangle,
-  CheckCircle2,
-  Cpu,
-  Fingerprint
+  AlertCircle,
+  ArrowRight,
+  Shield,
+  Store
 } from "lucide-react";
 import { useAdminAuth } from "../../context/AdminAuthContext";
 
@@ -18,15 +17,15 @@ function AdminLogin() {
   const location = useLocation();
   const { loginAdmin, isAdminAuthenticated } = useAdminAuth();
 
-  const [email, setEmail] = useState("admin@emox.ai");
-  const [password, setPassword] = useState("admin123");
+  const [email, setEmail] = useState(() => localStorage.getItem("emox_saved_admin_email") || "");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem("emox_saved_admin_email"));
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   const destination = location.state?.from?.pathname || "/admin";
 
-  // If already logged in, redirect immediately to admin dashboard
   useEffect(() => {
     if (isAdminAuthenticated) {
       navigate(destination, { replace: true });
@@ -35,164 +34,168 @@ function AdminLogin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setErrorMsg("Please enter both email and password.");
+      return;
+    }
+
     setErrorMsg("");
     setLoading(true);
 
-    // Simulate cryptographic verification delay
-    setTimeout(async () => {
-      const res = await loginAdmin(email, password);
-      setLoading(false);
+    try {
+      if (rememberMe) {
+        localStorage.setItem("emox_saved_admin_email", email.trim());
+      } else {
+        localStorage.removeItem("emox_saved_admin_email");
+      }
+
+      const res = await loginAdmin(email.trim(), password);
       if (res.success) {
         navigate(destination, { replace: true });
       } else {
-        setErrorMsg(res.error || "Authentication failed.");
+        setErrorMsg(res.error || "Invalid credentials. Please verify your email and password.");
       }
-    }, 600);
-  };
-
-  const handleUseDemo = () => {
-    setEmail("admin@emox.ai");
-    setPassword("admin123");
-    setErrorMsg("");
+    } catch (err) {
+      setErrorMsg(err.message || "An unexpected authentication error occurred.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100 flex items-center justify-center p-4 font-poppins relative overflow-hidden">
-      {/* Background Decorative Tech Elements */}
-      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-[120px]" />
-      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[120px]" />
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4 font-poppins relative overflow-hidden">
+      {/* Background ambient lighting */}
+      <div className="pointer-events-none absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-amber-500/10 blur-[140px]" />
+      <div className="pointer-events-none absolute -bottom-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-500/10 blur-[140px]" />
 
       <div className="w-full max-w-md relative z-10">
-        {/* Main Card */}
-        <div className="rounded-3xl border border-slate-800/80 bg-slate-900/90 backdrop-blur-2xl p-7 sm:p-8 shadow-2xl shadow-black/80">
+        {/* Card */}
+        <div className="rounded-3xl border border-slate-800 bg-slate-900/90 backdrop-blur-xl p-8 sm:p-9 shadow-2xl shadow-black/70">
           
-          {/* Top Brand & Security Badges */}
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-gradient-to-tr from-slate-950 to-slate-900 border border-amber-500/30 text-amber-400 shadow-lg shadow-amber-500/10 mb-3.5">
-              <ShieldCheck size={30} className="text-amber-400" />
+          {/* Header & Branding */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-amber-600/10 border border-amber-500/30 text-amber-400 mb-4 shadow-inner">
+              <Shield size={24} className="text-amber-400" />
             </div>
 
-            <div className="flex items-center justify-center gap-1.5 font-heading font-black text-2xl text-white tracking-tight">
+            <h1 className="font-heading font-black text-2xl text-white tracking-tight flex items-center justify-center gap-1">
               <span>emox</span>
               <span className="text-amber-400">.</span>
               <span className="text-slate-400 font-light text-xl">admin</span>
-            </div>
-            <p className="text-xs text-slate-400 mt-1 font-medium">
-              Enterprise Supply Chain Security Gateway
+            </h1>
+            <p className="text-xs text-slate-400 mt-1.5 font-normal">
+              Supply Chain Operations &amp; Intelligence Console
             </p>
-
-            <div className="mt-3 flex items-center justify-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-                256-Bit SSL Active
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/80 border border-slate-700 px-2.5 py-0.5 text-[10px] font-mono text-slate-300">
-                <Cpu size={10} className="text-amber-400" />
-                RBAC Level-3
-              </span>
-            </div>
           </div>
 
-          {/* Error Alert */}
+          {/* Error Message */}
           {errorMsg && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-xs text-rose-400 animate-shake">
-              <AlertTriangle size={16} className="shrink-0 mt-0.5 text-rose-400" />
-              <div className="leading-relaxed">{errorMsg}</div>
+            <div className="mb-6 flex items-start gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-3.5 text-xs text-rose-300 animate-slide-down">
+              <AlertCircle size={17} className="shrink-0 mt-0.5 text-rose-400" />
+              <div className="flex-1 leading-relaxed">{errorMsg}</div>
+              <button
+                type="button"
+                onClick={() => setErrorMsg("")}
+                className="text-rose-400 hover:text-rose-200 text-xs font-bold transition"
+              >
+                &times;
+              </button>
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-            {/* Admin Email */}
+            {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="block text-slate-300 font-bold">
-                Administrator Identifier / Email
+              <label className="block text-slate-300 font-semibold text-xs">
+                Email Address
               </label>
               <div className="relative flex items-center">
+                <Mail size={16} className="absolute left-3.5 text-slate-500 pointer-events-none" />
                 <input
-                  type="text"
+                  type="email"
                   required
+                  autoFocus
+                  autoComplete="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@emox.ai"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition-all"
+                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/90 pl-10 pr-3.5 py-3 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
-            {/* Admin Password */}
+            {/* Password Field */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-slate-300 font-bold">
-                  Security Passkey
+                <label className="block text-slate-300 font-semibold text-xs">
+                  Password
                 </label>
-                <button
-                  type="button"
-                  onClick={handleUseDemo}
-                  className="text-[10px] text-amber-400 hover:text-amber-300 font-bold hover:underline"
-                >
-                  Fill Default Credentials
-                </button>
               </div>
               <div className="relative flex items-center">
+                <Lock size={16} className="absolute left-3.5 text-slate-500 pointer-events-none" />
                 <input
                   type={showPassword ? "text" : "password"}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/80 px-3.5 py-2.5 pr-10 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition-all"
+                  placeholder="Enter your password"
+                  className="w-full rounded-xl border border-slate-700/80 bg-slate-950/90 pl-10 pr-10 py-3 text-xs text-white placeholder-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 focus:outline-none transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 text-slate-400 hover:text-slate-200 transition"
+                  className="absolute right-3.5 text-slate-500 hover:text-slate-300 transition"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            {/* Quick Helper Credentials Card */}
-            <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-2.5 text-[11px] text-slate-400 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-mono">
-                <KeyRound size={12} className="text-amber-400 shrink-0" />
-                <span>admin@emox.ai &middot; admin123</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleUseDemo}
-                className="text-[10px] font-bold text-amber-400 hover:underline shrink-0"
-              >
-                Auto-fill
-              </button>
+            {/* Options */}
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-300 select-none">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-slate-700 bg-slate-950 text-amber-500 focus:ring-0 focus:ring-offset-0"
+                />
+                <span>Remember email</span>
+              </label>
             </div>
 
             {/* Submit Button */}
             <button
               type="submit"
               disabled={loading}
-              className="btn-press w-full mt-2 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3 text-xs shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 cursor-pointer"
+              className="btn-press w-full mt-3 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 text-xs shadow-lg shadow-amber-500/20 transition-all disabled:opacity-60 cursor-pointer"
             >
               {loading ? (
                 <>
                   <div className="h-4 w-4 border-2 border-slate-950 border-t-transparent animate-spin rounded-full" />
-                  <span>Verifying Cryptographic Credentials...</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
-                  <Fingerprint size={16} />
-                  <span>Authenticate &amp; Unlock Admin Console</span>
+                  <span>Sign In</span>
+                  <ArrowRight size={15} />
                 </>
               )}
             </button>
           </form>
 
-          {/* Security Notice */}
-          <div className="mt-6 pt-4 border-t border-slate-800/80 text-center">
-            <p className="text-[10px] text-slate-500 leading-relaxed">
-              Strict Isolation Protocol: Access restricted exclusively to verified supply chain personnel. All session events logged and audited.
-            </p>
+          {/* Footer Navigation */}
+          <div className="mt-8 pt-6 border-t border-slate-800/80 flex items-center justify-center">
+            <Link
+              to="/"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-amber-400 font-medium transition"
+            >
+              <Store size={14} />
+              <span>Switch to Customer Storefront</span>
+            </Link>
           </div>
 
         </div>

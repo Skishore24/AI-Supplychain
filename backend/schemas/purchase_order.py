@@ -1,11 +1,25 @@
 from datetime import datetime, date
-from typing import List, Optional
-from pydantic import BaseModel
+from typing import List, Optional, Any
+from pydantic import BaseModel, model_validator
 
 class POItemCreate(BaseModel):
     product_id: int
     quantity: int
-    unit_cost: float
+    unit_cost: Optional[float] = 0.0
+    unit_price: Optional[float] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def reconcile_cost_and_price(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if data.get("unit_cost") is None and data.get("unit_price") is not None:
+                data["unit_cost"] = float(data["unit_price"])
+            elif data.get("unit_cost") is not None and data.get("unit_price") is None:
+                data["unit_price"] = float(data["unit_cost"])
+            elif data.get("unit_cost") is None:
+                data["unit_cost"] = 0.0
+                data["unit_price"] = 0.0
+        return data
 
 class POItemResponse(BaseModel):
     id: int
@@ -32,7 +46,17 @@ class PurchaseOrderStatusUpdate(BaseModel):
 
 class PurchaseOrderReceiveItem(BaseModel):
     item_id: int
-    received_quantity: int
+    received_quantity: Optional[int] = 0
+    quantity_received: Optional[int] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def reconcile_qty(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            qty = data.get("received_quantity") if data.get("received_quantity") is not None else data.get("quantity_received", 0)
+            data["received_quantity"] = qty
+            data["quantity_received"] = qty
+        return data
 
 class PurchaseOrderReceiveRequest(BaseModel):
     received_items: List[PurchaseOrderReceiveItem]

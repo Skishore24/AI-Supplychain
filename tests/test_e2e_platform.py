@@ -3,7 +3,7 @@ import urllib.parse
 import json
 import sys
 
-BASE_URL = "http://127.0.0.1:8000/api/v1"
+BASE_URL = "http://127.0.0.1:8000/api"
 
 def make_request(endpoint, method="GET", data=None, token=None):
     url = f"{BASE_URL}{endpoint}"
@@ -74,7 +74,7 @@ def main():
 
     # AI Summary
     status, ai_sum = make_request("/ai/summary", token=token)
-    print(f"[TEST 4.4] AI Summary: Status {status} | Catalog Count: {ai_sum.get('total_products')} | Revenue: ₹{ai_sum.get('total_revenue')}")
+    print(f"[TEST 4.4] AI Summary: Status {status} | Catalog Count: {ai_sum.get('total_products')} | Revenue: INR {ai_sum.get('total_revenue')}")
     assert status == 200, f"AI Summary failed: {ai_sum}"
 
     # 5. Purchase Order Cycle & Stock Receipt
@@ -98,7 +98,7 @@ def main():
     }
     status, po = make_request("/purchase-orders/", method="POST", data=po_payload, token=token)
     po_id = po["id"]
-    print(f"[TEST 5.1] Create PO: Status {status} | PO #{po_id} | Total: ₹{po.get('total_cost')}")
+    print(f"[TEST 5.1] Create PO: Status {status} | PO #{po_id} | Total: INR {po.get('total_cost')}")
     assert status in (200, 201), f"PO creation failed: {po}"
 
     # Approve PO
@@ -143,7 +143,7 @@ def main():
         ]
     }
     status, order_res = make_request("/orders/", method="POST", data=order_payload)
-    print(f"[TEST 6.1] Customer Checkout: Status {status} | Order #{order_res.get('order_number')} | Total: ₹{order_res.get('total_amount')}")
+    print(f"[TEST 6.1] Customer Checkout: Status {status} | Order #{order_res.get('order_number')} | Total: INR {order_res.get('total_amount')}")
     assert status in (200, 201), f"Checkout failed: {order_res}"
 
     # Verify inventory decremented by 2
@@ -161,7 +161,7 @@ def main():
 
     # 8. Operations Analytics
     status, an_res = make_request("/analytics/overview?timeframe=30d", token=token)
-    print(f"[TEST 8] Analytics Overview: Status {status} | Revenue: ₹{an_res.get('total_revenue')} | Orders: {an_res.get('total_orders')} | Units: {an_res.get('total_units_sold')}")
+    print(f"[TEST 8] Analytics Overview: Status {status} | Revenue: INR {an_res.get('total_revenue')} | Orders: {an_res.get('total_orders')} | Units: {an_res.get('total_units_sold')}")
 
     print("\n==================================================")
     print("ALL 8 VERIFICATION PHASES PASSED WITH ZERO ERRORS!")

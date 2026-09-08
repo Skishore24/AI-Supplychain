@@ -10,7 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Multi-Agent Supply Chain AI"
     VERSION: str = "2.0.0"
-    API_V1_STR: str = "/api/v1"
+    API_PREFIX: str = "/api"
+    API_STR: str = "/api"
     
     # Database configuration
     DATABASE_URL: str = os.getenv(

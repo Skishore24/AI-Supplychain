@@ -6,7 +6,7 @@ import BottomNav from "../../components/user/BottomNav";
 import Footer from "../../components/user/Footer";
 import ProductCard from "../../components/user/ProductCard";
 import SortFilterBar from "../../components/user/SortFilterBar";
-import { API_BASE_URL } from "../../context/CartContext";
+import api from "../../services/api";
 
 function Shop() {
   const [searchParams] = useSearchParams();
@@ -19,16 +19,22 @@ function Shop() {
   const [sortBy, setSortBy] = useState("relevance");
   const [minRating, setMinRating] = useState(0);
 
+  const [categories, setCategories] = useState([]);
+
   const loadProducts = () => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/products/`)
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        setProducts(Array.isArray(data) ? data : []);
+    Promise.all([
+      api.products.list(),
+      api.categories.list()
+    ])
+      .then(([prodData, catData]) => {
+        setProducts(Array.isArray(prodData) ? prodData : prodData.items || []);
+        const catList = Array.isArray(catData) ? catData : catData.items || [];
+        setCategories(catList.map((c) => c.name));
         setLoading(false);
       })
       .catch((err) => {
-        console.error("Error loading products:", err);
+        console.error("Error loading shop data from DB:", err);
         setProducts([]);
         setLoading(false);
       });
@@ -43,9 +49,11 @@ function Shop() {
     if (q !== null) {
       setSearchTerm(q);
     }
+    const cat = searchParams.get("category");
+    if (cat) {
+      setSelectedCategory(cat);
+    }
   }, [searchParams]);
-
-  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
 
   const activeFilterCount = (selectedCategory !== "ALL" ? 1 : 0) + (minRating > 0 ? 1 : 0);
 

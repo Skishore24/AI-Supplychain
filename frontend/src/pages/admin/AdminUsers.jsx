@@ -10,7 +10,8 @@ import {
   UserX,
   Plus,
   Mail,
-  Calendar
+  Calendar,
+  Trash2
 } from "lucide-react";
 import AdminLayout from "./AdminLayout";
 import api from "../../services/api";
@@ -57,6 +58,18 @@ export default function AdminUsers() {
       loadUsers();
     } catch (err) {
       alert("Failed to update status: " + err.message);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userEmail) => {
+    if (!window.confirm(`Permanently remove user account for ${userEmail}?`)) return;
+    try {
+      await api.users.delete(userId);
+      setNotification(`User ${userEmail} removed successfully.`);
+      setTimeout(() => setNotification(""), 3500);
+      loadUsers();
+    } catch (err) {
+      alert("Failed to delete user: " + err.message);
     }
   };
 
@@ -181,16 +194,25 @@ export default function AdminUsers() {
                       {u.created_at ? new Date(u.created_at).toLocaleDateString() : "Active"}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => handleToggleStatus(u.id)}
-                        className={`btn-press rounded-lg px-2.5 py-1 text-[11px] font-bold border ${
-                          u.is_active
-                            ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                            : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                        }`}
-                      >
-                        {u.is_active ? "Suspend" : "Activate"}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleToggleStatus(u.id)}
+                          className={`btn-press rounded-lg px-2.5 py-1 text-[11px] font-bold border ${
+                            u.is_active
+                              ? "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100"
+                              : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                          }`}
+                        >
+                          {u.is_active ? "Suspend" : "Activate"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(u.id, u.email)}
+                          title="Delete user"
+                          className="btn-press rounded-lg p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition cursor-pointer"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
