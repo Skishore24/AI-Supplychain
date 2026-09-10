@@ -20,38 +20,38 @@ from api.routes.notifications import router as notifications_router
 from api.routes.audit_logs import router as audit_logs_router
 from api.routes.settings import router as settings_router
 from api.routes.jobs import router as jobs_router
-from api.v1 import api_v1_router
 
-api_router = APIRouter()
+api_v1_router = APIRouter()
 
-api_router.include_router(auth_router)
-api_router.include_router(users_router)
-api_router.include_router(organizations_router)
-api_router.include_router(products_router)
-api_router.include_router(categories_router)
-api_router.include_router(inventory_router)
-api_router.include_router(warehouses_router)
-api_router.include_router(suppliers_router)
-api_router.include_router(orders_router)
-api_router.include_router(sales_router)
-api_router.include_router(purchase_orders_router)
-api_router.include_router(ai_router)
-api_router.include_router(knowledge_router)
-api_router.include_router(forecast_router)
-api_router.include_router(alerts_router)
-api_router.include_router(analytics_router)
-api_router.include_router(notifications_router)
-api_router.include_router(audit_logs_router)
-api_router.include_router(settings_router)
-api_router.include_router(jobs_router)
+api_v1_router.include_router(auth_router)
+api_v1_router.include_router(users_router)
+api_v1_router.include_router(organizations_router)
+api_v1_router.include_router(products_router)
+api_v1_router.include_router(categories_router)
+api_v1_router.include_router(inventory_router)
+api_v1_router.include_router(warehouses_router)
+api_v1_router.include_router(suppliers_router)
+api_v1_router.include_router(orders_router)
+api_v1_router.include_router(sales_router)
+api_v1_router.include_router(purchase_orders_router)
+api_v1_router.include_router(ai_router)
+api_v1_router.include_router(knowledge_router)
+api_v1_router.include_router(forecast_router)
+api_v1_router.include_router(alerts_router)
+api_v1_router.include_router(analytics_router)
+api_v1_router.include_router(notifications_router)
+api_v1_router.include_router(audit_logs_router)
+api_v1_router.include_router(settings_router)
+api_v1_router.include_router(jobs_router)
 
-@api_router.get("/health")
-def api_health():
+@api_v1_router.get("/health")
+def api_v1_health():
     from core.config import settings
     return {
         "status": "healthy",
-        "version": settings.VERSION,
+        "api_version": "v1",
+        "platform_version": settings.VERSION,
         "database": "postgresql" if "postgresql" in settings.DATABASE_URL else "sqlite"
     }
 
-__all__ = ["api_router", "api_v1_router"]
+__all__ = ["api_v1_router"]

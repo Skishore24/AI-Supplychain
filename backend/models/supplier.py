@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 
 from db.base import Base
@@ -9,6 +9,7 @@ class Supplier(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False, index=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     product_name = Column(String, nullable=False, default="General Components") # Legacy support
     price = Column(Float, nullable=False, default=0.0) # Base unit cost / quote
     quality_score = Column(Float, nullable=False, default=90.0)

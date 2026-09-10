@@ -23,6 +23,7 @@ class UserResponse(BaseModel):
     phone: Optional[str] = ""
     address: Optional[str] = ""
     avatar_url: Optional[str] = ""
+    organization_id: Optional[int] = None
     created_at: datetime
 
     class Config:

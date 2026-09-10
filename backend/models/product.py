@@ -21,6 +21,7 @@ class Product(Base):
     reorder_point = Column(Integer, nullable=False, default=15)
     safety_stock = Column(Integer, nullable=False, default=10)
     lead_time_days = Column(Integer, nullable=False, default=5)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     specifications = Column(Text, nullable=True, default="{}")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)

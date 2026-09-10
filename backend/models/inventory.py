@@ -10,6 +10,7 @@ class Inventory(Base):
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, unique=True)
     warehouse_id = Column(Integer, ForeignKey("warehouses.id", ondelete="SET NULL"), nullable=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     current_stock = Column(Integer, nullable=False, default=0) # Total physical units on hand
     reserved_stock = Column(Integer, nullable=False, default=0) # Units committed to active orders
     reorder_level = Column(Integer, nullable=False, default=10) # Threshold triggering restock

@@ -28,6 +28,10 @@ __pycache__/
 *.so
 .pytest_cache/
 
+# Uploaded documents (preserve .gitkeep only)
+backend/uploaded_documents/*
+!backend/uploaded_documents/.gitkeep
+
 # Logs
 logs/
 *.log

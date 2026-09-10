@@ -10,6 +10,7 @@ class PurchaseOrder(Base):
     id = Column(Integer, primary_key=True, index=True)
     po_number = Column(String, unique=True, index=True, nullable=False) # e.g. PO-20260907-001
     supplier_id = Column(Integer, ForeignKey("suppliers.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     status = Column(
         String,
         nullable=False,
