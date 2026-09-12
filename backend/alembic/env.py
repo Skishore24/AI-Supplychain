@@ -10,8 +10,13 @@ from alembic import context
 backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
 
-from core.config import settings
-from models import Base
+try:
+    from app.core.config import settings
+    from app.db.base import Base
+    import app.models
+except ImportError:
+    from core.config import settings
+    from models import Base
 
 config = context.config
 

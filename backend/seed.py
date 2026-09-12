@@ -10,21 +10,38 @@ from datetime import date, timedelta, datetime, timezone
 # Ensure backend root on sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from db.session import SessionLocal, engine
-from core.security import get_password_hash
-import models
-from models.organization import Organization, OrganizationMembership
-from models.user import User
-from models.category import Category
-from models.warehouse import Warehouse
-from models.product import Product
-from models.supplier import Supplier
-from models.supplier_product import SupplierProduct
-from models.inventory import Inventory
-from models.sales import Sale
-from models.order import Order, OrderItem
-from models.purchase_order import PurchaseOrder, PurchaseOrderItem
-from models.system import Notification, AuditLog
+try:
+    from app.db.session import SessionLocal, engine
+    from app.core.security import get_password_hash
+    import app.models as models
+    from app.models.organization import Organization, OrganizationMembership
+    from app.models.user import User
+    from app.models.category import Category
+    from app.models.warehouse import Warehouse
+    from app.models.product import Product
+    from app.models.supplier import Supplier
+    from app.models.supplier_product import SupplierProduct
+    from app.models.inventory import Inventory
+    from app.models.sales import Sale
+    from app.models.order import Order, OrderItem
+    from app.models.purchase_order import PurchaseOrder, PurchaseOrderItem
+    from app.models.system import Notification, AuditLog
+except ImportError:
+    from db.session import SessionLocal, engine
+    from core.security import get_password_hash
+    import models
+    from models.organization import Organization, OrganizationMembership
+    from models.user import User
+    from models.category import Category
+    from models.warehouse import Warehouse
+    from models.product import Product
+    from models.supplier import Supplier
+    from models.supplier_product import SupplierProduct
+    from models.inventory import Inventory
+    from models.sales import Sale
+    from models.order import Order, OrderItem
+    from models.purchase_order import PurchaseOrder, PurchaseOrderItem
+    from models.system import Notification, AuditLog
 
 def seed():
     db = SessionLocal()
@@ -858,26 +875,6 @@ def seed():
             po_number=f"PO-{date.today().strftime('%Y%m%d')}-001",
             supplier_id=vt.id,
             organization_id=default_org_id,
-            status="pending_approval",
-            total_cost=round(bat_prod.cost_price * 150, 2),
-            expected_delivery=date.today() + timedelta(days=4),
-            notes="AI Auto-Generated replenishment recommendation to mitigate battery module stockout.",
-            created_by="Agent 2: Restock Analyzer"
-        )
-        db.add(po1)
-        db.flush()
-
-        db.add(PurchaseOrderItem(
-            purchase_order_id=po1.id,
-            product_id=bat_prod.id,
-            quantity=150,
-            received_quantity=0,
-            unit_cost=bat_prod.cost_price,
-            total_cost=round(bat_prod.cost_price * 150, 2)
-        ))
-        db.commit()
-            po_number=f"PO-{date.today().strftime('%Y%m%d')}-001",
-            supplier_id=vt.id,
             status="pending_approval",
             total_cost=round(bat_prod.cost_price * 150, 2),
             expected_delivery=date.today() + timedelta(days=4),
