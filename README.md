@@ -158,7 +158,8 @@ npm run dev
 
 ---
 
-## 🧪 Verification & Automated Testing
+
+## 🤖 Multi-Agent System Breakdown
 
 ### AI Platform Test Suite
 Verifies Ollama connectivity, deterministic agent calculations, ML forecasting pipeline, RAG chunking and retrieval, human approval PO workflow, and security tool guardrails:
