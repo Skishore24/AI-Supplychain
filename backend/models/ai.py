@@ -12,6 +12,7 @@ class AIRecommendation(Base):
     agent_type = Column(String, nullable=True)  # "supplier", "inventory", "demand", "risk", "procurement"
     entity_type = Column(String, nullable=False)  # "product", "supplier", "inventory", "purchase_order"
     entity_id = Column(Integer, nullable=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=True)
     recommendation = Column(Text, nullable=False)
     confidence = Column(Float, nullable=True, default=0.85)  # 0.0 - 1.0 (or null if insufficient data)
@@ -35,6 +36,7 @@ class InventoryAlert(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     severity = Column(String, nullable=False, default="WARNING")  # "CRITICAL", "WARNING", "INFO"
     title = Column(String, nullable=False)
     reason = Column(Text, nullable=False)
@@ -94,6 +96,7 @@ class KnowledgeDocument(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     document_type = Column(String, nullable=False, default="policy")  # "contract", "policy", "sop", "manual", "certificate", "invoice"
     source = Column(String, nullable=True)  # filename or upload origin
     file_path = Column(String, nullable=False)
@@ -129,6 +132,7 @@ class AIJob(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     job_type = Column(String, nullable=False)  # "document_ingest", "forecast_training", "batch_risk", "reindex"
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     status = Column(String, nullable=False, default="QUEUED")  # "QUEUED", "RUNNING", "COMPLETED", "FAILED"
     started_at = Column(DateTime, nullable=True)
     completed_at = Column(DateTime, nullable=True)
@@ -143,6 +147,7 @@ class AIConversation(Base):
 
     id = Column(String, primary_key=True, index=True)  # UUID or custom ID
     user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     title = Column(String, nullable=False, default="Supply Chain Intelligence Chat")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
@@ -168,6 +173,7 @@ class AIAuditLog(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_email = Column(String, nullable=True)
+    organization_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True, default=1)
     agent = Column(String, nullable=False)
     tool = Column(String, nullable=True)
     action = Column(String, nullable=False)

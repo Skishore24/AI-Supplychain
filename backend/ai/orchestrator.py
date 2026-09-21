@@ -46,12 +46,15 @@ class AIOrchestrator:
         user_msg = message.strip()
         user_email = getattr(user, "email", "admin@emox.ai")
 
+        org_id = getattr(user, "organization_id", None) or 1
+
         # 1. Manage Conversation state
         if not conversation_id:
             conv_id = f"conv-{uuid.uuid4().hex[:12]}"
             conv = AIConversation(
                 id=conv_id,
                 user_id=getattr(user, "id", None),
+                organization_id=org_id,
                 title=user_msg[:40] + ("..." if len(user_msg) > 40 else ""),
                 created_at=datetime.now(timezone.utc)
             )
@@ -64,6 +67,7 @@ class AIOrchestrator:
                 conv = AIConversation(
                     id=conv_id,
                     user_id=getattr(user, "id", None),
+                    organization_id=org_id,
                     title=user_msg[:40],
                     created_at=datetime.now(timezone.utc)
                 )
@@ -219,6 +223,7 @@ class AIOrchestrator:
         # 5. Audit Logging
         audit = AIAuditLog(
             user_email=user_email,
+            organization_id=org_id,
             agent=agent_used,
             tool=tool_results[0].get("tool") if tool_results else "direct_chat",
             action="AI_CHAT_QUERY",

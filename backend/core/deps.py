@@ -50,19 +50,26 @@ def get_current_user(
 def require_admin_or_manager(
     current_user: User = Depends(get_current_user)
 ) -> User:
-    if current_user.role not in ("admin", "manager", "superadmin"):
+    role = (current_user.role or "").lower()
+    if role not in ("admin", "manager", "superadmin", "super_admin", "org_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Administrative privileges required to access this resource.",
+            detail="Administrative or manager privileges required to access this resource.",
         )
     return current_user
 
 def require_admin(
     current_user: User = Depends(get_current_user)
 ) -> User:
-    if current_user.role not in ("admin", "superadmin"):
+    role = (current_user.role or "").lower()
+    if role not in ("admin", "superadmin", "super_admin", "org_admin"):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Superadmin privileges required.",
+            detail="Administrator privileges required.",
         )
     return current_user
+
+def get_tenant_org_id(current_user: User) -> Optional[int]:
+    """Helper to extract organization_id for multi-tenant query scoping."""
+    return getattr(current_user, "organization_id", None) or 1
+

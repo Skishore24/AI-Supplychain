@@ -25,7 +25,9 @@ import {
   CheckCircle2,
   Cpu,
   Database,
-  Sparkles
+  Sparkles,
+  Building2,
+  Activity
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useNotifications } from "../../hooks/useAnalytics";
@@ -90,7 +92,9 @@ function AdminLayout({ children, title, subtitle, onRefresh, refreshing }) {
     {
       group: "SYSTEM",
       items: [
+        { path: "/admin/organizations", label: "Tenant Organizations", icon: Building2 },
         { path: "/admin/users", label: "Users & Roles", icon: Users },
+        { path: "/admin/jobs", label: "Background Jobs", icon: Activity },
         { path: "/admin/notifications", label: "Notifications", icon: Bell, badge: unreadCount },
         { path: "/admin/audit-logs", label: "Audit Logs", icon: History },
         { path: "/admin/settings", label: "Settings", icon: Sliders },

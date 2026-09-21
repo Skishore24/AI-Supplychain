@@ -73,6 +73,10 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
     user_count = db.query(User).count()
     assigned_role = "admin" if user_count == 0 else (data.role or "customer")
 
+    from models.organization import Organization, OrganizationMembership
+    default_org = db.query(Organization).first()
+    default_org_id = default_org.id if default_org else 1
+
     new_user = User(
         email=normalized_email,
         hashed_password=get_password_hash(data.password),
@@ -80,9 +84,18 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
         role=assigned_role,
         phone=data.phone or "",
         address=data.address or "",
+        organization_id=default_org_id,
         is_active=True
     )
     db.add(new_user)
+    db.flush()
+
+    membership = OrganizationMembership(
+        user_id=new_user.id,
+        organization_id=default_org_id,
+        role="ORG_ADMIN" if assigned_role in ("admin", "SUPER_ADMIN") else "MEMBER"
+    )
+    db.add(membership)
     db.commit()
     db.refresh(new_user)
 

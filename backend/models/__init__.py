@@ -1,4 +1,5 @@
 from db.base import Base
+from models.organization import Organization, OrganizationMembership
 from models.user import User
 from models.category import Category
 from models.product import Product
@@ -26,6 +27,8 @@ from models.system import Notification, AuditLog
 
 __all__ = [
     "Base",
+    "Organization",
+    "OrganizationMembership",
     "User",
     "Category",
     "Product",

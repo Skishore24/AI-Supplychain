@@ -1,0 +1,30 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /features
+Allow: /solutions
+Allow: /ai-agents
+Allow: /forecasting
+Allow: /inventory
+Allow: /procurement
+Allow: /supplier-intelligence
+Allow: /risk-management
+Allow: /analytics
+Allow: /pricing
+Allow: /documentation
+Allow: /contact
+Allow: /blog
+Allow: /blog/*
+Allow: /privacy
+Allow: /terms
+
+# Disallow Private Application & Admin Workspaces
+Disallow: /app/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cart
+Disallow: /orders
+Disallow: /profile
+
+Sitemap: https://emox.ai/sitemap.xml
